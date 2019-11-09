@@ -1,0 +1,9 @@
+config.js
+ecosystem.config.js
+
+.vscode/
+
+node_modules/
+
+commands/*
+!commands/.gitkeep

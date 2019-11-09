@@ -1,0 +1,33 @@
+{
+    "env": {
+        "es6": true,
+        "node": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "google"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 9
+    },
+    "globals": {
+        "logger": false,
+        "bot": false,
+        "util": false
+    },
+    "rules": {
+        "indent": ["warn", 4],
+        "linebreak-style": ["error", "unix"],
+        "quotes": ["error", "single"],
+        "semi": ["error", "always"],
+        "no-console": "warn",
+        "no-unused-vars": "warn",
+        "require-jsdoc": "off",
+        "new-cap": "warn",
+        "no-undef": "off",
+        "max-len": ["warn", 200, {"ignoreStrings": true, "ignoreTemplateLiterals": true}],
+        "eqeqeq": "error",
+        "no-throw-literal": "error",
+        "no-multiple-empty-lines": ["error", {"maxEOF": 1, "max": 2}]
+    }
+}
