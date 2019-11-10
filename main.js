@@ -82,7 +82,7 @@ async function connect() {
     try {
         await initData();
         await loadCommands();
-        await bot.connect();
+        await bot.initialize();
         await util.misc.supiactive();
     } catch (e) {
         logger.error(`Error encountered during initialization: ${e}`);
@@ -230,7 +230,7 @@ const dtiSend = async (meta, msg, cmd) => {
 
         return await bot.say(meta.channel, message);
     } catch (e) {
-        if (e.name === 'SayError' && e.message.includes('You are timed out')) {
+        if (e instanceof SayError && e.message.includes('You are timed out')) {
             return logger.debug('Timed out. Do not send');
         }
         await bot.say(meta.channel, 'Error while processing the reply message monkaS');

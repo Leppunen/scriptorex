@@ -19,9 +19,14 @@ client.timeouts = new Set();
 client.commands = new Map();
 client.aliases = new Map();
 
+client.initialize = async () => {
+    await client.joinAll(bot.channels.filter((channel) => channel.Connect === 1).map((channel) => channel.Name));
+    await client.connect();
+};
+
 client.on('ready', async () => {
     logger.info(`${chalk.green('[CONNECTED]')} || Connected to Twitch.`);
-    await client.joinAll(bot.channels.filter((channel) => channel.Connect === 1).map((channel) => channel.Name));
+    await client.say(config.twitch.username, 'Running!');
 });
 
 client.on('error', (error) => {
