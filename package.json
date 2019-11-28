@@ -10,18 +10,18 @@
     "license": "N/A",
     "dependencies": {
         "axios": "^0.18.1",
-        "axios-cache-adapter": "^2.4.1",
+        "axios-cache-adapter": "^2.5.0",
         "chalk": "^3.0.0",
-        "dank-twitch-irc": "^3.0.3",
+        "dank-twitch-irc": "^3.0.5",
         "humanize-duration": "^3.21.0",
-        "mariadb": "^2.1.2",
+        "mariadb": "^2.1.3",
         "modern-rcon": "^1.0.3",
         "qs": "^6.9.1",
         "shelljs": "^0.8.3",
         "winston": "^3.2.1"
     },
     "devDependencies": {
-        "eslint": "^6.6.0",
+        "eslint": "^6.7.1",
         "eslint-config-google": "^0.14.0"
     }
 }
