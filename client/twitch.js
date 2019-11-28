@@ -9,9 +9,8 @@ const client = new ChatClient({
     rateLimits: 'verifiedBot',
 });
 
-
 client.use(new AlternateMessageModifier(client));
-client.use(new SlowModeRateLimiter(client));
+client.use(new SlowModeRateLimiter(client, 20));
 
 global.bot = client;
 
@@ -20,8 +19,8 @@ client.commands = new Map();
 client.aliases = new Map();
 
 client.initialize = async () => {
-    await client.joinAll(bot.channels.filter((channel) => channel.Connect === 1).map((channel) => channel.Name));
-    await client.connect();
+    await client.joinAll(bot.data.channels.filter((channel) => channel.Connect === 1).map((channel) => channel.Name));
+    client.connect();
 };
 
 client.on('ready', async () => {
@@ -47,11 +46,32 @@ client.on('CLEARCHAT', async (msg) => {
     }
 });
 
-client.on('NOTICE', async (msg) => {
-    if (!msg.messageID.match(config.parms.ignoredMsgIds)) {
-        await util.misc.dblog('Notice', msg.channelName, null, null, msg.messageID, msg.messageText, null);
+client.on('NOTICE', async ({channelName, messageID, messageText, ...others}) => {
+    if (!messageID) {
+        return;
     }
-    logger.info(`${chalk.green('[NOTICE]')} || Incoming notice: ${msg.messageID} in channel ${msg.channelName} -> ${msg.messageText}`);
+
+    switch (messageID) {
+    case 'msg_rejected':
+    case 'msg_rejected_mandatory': {
+        logger.debug(`Received msg_rejected/mandatory from ${channelName}! -> ${messageText}`);
+        break;
+    }
+
+    case 'no_permission': {
+        logger.debug(`Received no_permission from ${channelName}! -> ${messageText}`);
+        break;
+    }
+
+    case 'host_on':
+    case 'host_target_went_offline': {
+        break;
+    }
+
+    default:
+        await util.misc.dblog('Notice', channelName, null, null, messageID, messageText, null);
+        logger.info(`${chalk.green('[NOTICE]')} || Incoming notice: ${messageID} in channel ${channelName} -> ${messageText}`);
+    }
 });
 
 module.exports = client;
