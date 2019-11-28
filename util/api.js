@@ -235,7 +235,7 @@ module.exports.dubtrack = axios.create({
 // Azure Function API
 module.exports.azure = axios.create({
     timeout: 10000,
-    baseURL: 'https://ivr-dankapi.azurewebsites.net',
+    baseURL: 'https://dankapi.azurewebsites.net',
     headers: {
         'Content-Type': 'application/json',
         'x-functions-key': config.tokens.azure,
