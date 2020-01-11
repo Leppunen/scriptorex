@@ -1,7 +1,11 @@
-global.modules = this;
-
 // Cooldown Manager
-exports.cooldown = require('./cooldown.js');
+module.exports.cooldown = require('./cooldown.js');
 
 // Banphrase Checker
-exports.banphrase = require('./banphrase.js');
+module.exports.banphrase = require('./banphrase.js');
+
+// Filters
+module.exports.filter = require('./filter.js');
+
+// User
+module.exports.user = require('./user.js');

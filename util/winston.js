@@ -2,7 +2,6 @@ const {createLogger, format, transports, addColors} = require('winston');
 const {combine, colorize, timestamp, printf} = format;
 const chalk = require('chalk');
 const util = require('util');
-global.logger = this;
 
 const loggerlevels = {
     colors: {

@@ -1,6 +1,6 @@
 module.exports.resolver = async (target) => {
     try {
-        const {data} = await util.api.bot(`/twitch/resolve/${target}`);
+        const {data} = await sc.Utils.api.bot(`/twitch/resolve/${target}`);
         return data;
     } catch (err) {
         if (err.response && err.response.status === 404) return false;
@@ -10,7 +10,7 @@ module.exports.resolver = async (target) => {
 
 module.exports.resolveid = async (target) => {
     try {
-        const {data} = await util.api.bot(`/twitch/resolve/${target}?id=1`);
+        const {data} = await sc.Utils.api.bot(`/twitch/resolve/${target}?id=1`);
         return data;
     } catch (err) {
         if (err.response && err.response.status === 404) return false;
@@ -20,7 +20,7 @@ module.exports.resolveid = async (target) => {
 
 module.exports.bot = async (username) => {
     try {
-        const {data} = await util.api.bot(`/twitch/bot/${username}`);
+        const {data} = await sc.Utils.api.bot(`/twitch/bot/${username}`);
         return data;
     } catch (err) {
         if (err.response && err.response.status === 404) return false;
@@ -30,7 +30,7 @@ module.exports.bot = async (username) => {
 
 module.exports.stream = async (username) => {
     try {
-        const {data} = await util.api.bot(`/twitch/stream/${username}`);
+        const {data} = await sc.Utils.api.bot(`/twitch/stream/${username}`);
         return data;
     } catch (err) {
         if (err.response && err.response.status === 404) return false;
@@ -39,7 +39,7 @@ module.exports.stream = async (username) => {
 };
 
 module.exports.inchat = async (channel, username) => {
-    const {status, data} = await util.api.tmi(`/group/user/${channel}/chatters`);
+    const {status, data} = await sc.Utils.api.tmi(`/group/user/${channel.toLowerCase()}/chatters`);
     if (status === 200) {
         const all = Object.keys(data['chatters'])
             .flatMap((e) => data['chatters'][e]);
@@ -52,7 +52,7 @@ module.exports.inchat = async (channel, username) => {
 };
 
 module.exports.chatters = async (channel) => {
-    const {status, data} = await util.api.tmi(`/group/user/${channel}/chatters`);
+    const {status, data} = await sc.Utils.api.tmi(`/group/user/${channel.toLowerCase()}/chatters`);
     if (status === 200) {
         const all = Object.keys(data['chatters'])
             .flatMap((e) => data['chatters'][e]);
