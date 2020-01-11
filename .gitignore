@@ -6,4 +6,3 @@ ecosystem.config.js
 node_modules/
 
 commands/*
-!commands/.gitkeep
