@@ -30,12 +30,6 @@ module.exports.dns = axios.create({
     },
 });
 
-// GithubAPI
-module.exports.git = axios.create({
-    baseURL: 'https://api.github.com/',
-    timeout: 1000,
-});
-
 // high.fi API
 module.exports.high = axios.create({
     baseURL: 'https://high.fi/',
@@ -45,22 +39,12 @@ module.exports.high = axios.create({
     },
 });
 
-// Sinusbot API
-module.exports.sinus = axios.create({
-    baseURL: 'https://sinusbot.ivr.fi/api/v1',
-    timeout: 1000,
-    headers: {
-        'Authorization': 'Bearer ' + config.tokens.sinus,
-        'Content-Type': 'application/json',
-    },
-});
-
 // Twitch API v5
 module.exports.kraken = axios.create({
     baseURL: 'https://api.twitch.tv/kraken',
     timeout: 1500,
     headers: {
-        'Client-ID': config.tokens.kraken,
+        'Client-ID': sc.Config.tokens.kraken,
         'Accept': 'application/vnd.twitchtv.v5+json',
     },
 });
@@ -70,7 +54,7 @@ module.exports.helix = axios.create({
     baseURL: 'https://api.twitch.tv/helix',
     timeout: 1500,
     headers: {
-        'Client-ID': config.tokens.kraken,
+        'Client-ID': sc.Config.tokens.kraken,
     },
 });
 
@@ -138,8 +122,8 @@ module.exports.push = axios.create({
         'Content-Type': 'application/json',
     },
     data: {
-        token: config.tokens.pushToken,
-        user: config.tokens.pushUser,
+        token: sc.Config.tokens.pushToken,
+        user: sc.Config.tokens.pushUser,
     },
 });
 
@@ -151,7 +135,7 @@ module.exports.shodan = axios.create({
         'Content-Type': 'application/json',
     },
     params: {
-        key: config.tokens.shodan,
+        key: sc.Config.tokens.shodan,
         minify: true,
     },
 });
@@ -168,7 +152,7 @@ module.exports.wolfram = axios.create({
         podindex: '1,2,3',
         format: 'plaintext',
         excludepodid: 'VisualForm',
-        appid: config.tokens.wolfram,
+        appid: sc.Config.tokens.wolfram,
         output: 'json',
     },
 });
@@ -192,16 +176,7 @@ module.exports.supinic = axios.create({
     headers: {
         'Content-Type': 'application/json',
         'User-Agent': 'scriptorex / Leppunen@twitch',
-        'Authorization': `Basic ${config.tokens.supiapi}`,
-    },
-});
-
-// Bilibili API
-module.exports.bilibili = axios.create({
-    timeout: 6000,
-    baseURL: 'https://api.bilibili.com',
-    headers: {
-        'Content-Type': 'application/json',
+        'Authorization': `Basic ${sc.Config.tokens.supiapi}`,
     },
 });
 
@@ -231,14 +206,3 @@ module.exports.dubtrack = axios.create({
         'Content-Type': 'application/json',
     },
 });
-
-// Azure Function API
-module.exports.azure = axios.create({
-    timeout: 10000,
-    baseURL: 'https://dankapi.azurewebsites.net',
-    headers: {
-        'Content-Type': 'application/json',
-        'x-functions-key': config.tokens.azure,
-    },
-});
-
