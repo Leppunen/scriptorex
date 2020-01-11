@@ -11,7 +11,6 @@
         "ecmaVersion": 9
     },
     "globals": {
-        "logger": false,
         "bot": false,
         "util": false
     },
@@ -25,7 +24,7 @@
         "require-jsdoc": "off",
         "new-cap": "warn",
         "no-undef": "off",
-        "max-len": ["warn", 200, {"ignoreStrings": true, "ignoreTemplateLiterals": true}],
+        "max-len": ["warn", 250, {"ignoreStrings": true, "ignoreTemplateLiterals": true}],
         "eqeqeq": "error",
         "no-throw-literal": "error",
         "no-multiple-empty-lines": ["error", {"maxEOF": 1, "max": 2}]
