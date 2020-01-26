@@ -130,7 +130,7 @@ module.exports.push = axios.create({
 // Shodan API
 module.exports.shodan = axios.create({
     baseURL: 'https://api.shodan.io',
-    timeout: 800,
+    timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
     },
