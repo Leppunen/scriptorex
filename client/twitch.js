@@ -11,11 +11,7 @@ const client = new Twitch.ChatClient({
 client.use(new Twitch.AlternateMessageModifier(client));
 client.use(new Twitch.SlowModeRateLimiter(client, 20));
 
-global.bot = client;
-
 client.timeouts = new Set();
-client.commands = new Map();
-client.aliases = new Map();
 
 client.initialize = async () => {
     await client.joinAll(sc.Data.channels.filter((channel) => channel.Connect === 1 && channel.Platform === 'Twitch').map((channel) => channel.Name));
@@ -84,6 +80,7 @@ client.on('PRIVMSG', (msg) => handleMsg(msg));
 client.on('WHISPER', (msg) => handleMsg(msg));
 
 const handleMsg = async (msg) => {
+    const type = (msg instanceof Twitch.WhisperMessage) ? 'whisper' : 'privmsg';
     const channelMeta = sc.Data.channels.find((chn) => chn.Name === msg.channelName) || {};
 
     // Update bot status
@@ -118,11 +115,14 @@ const handleMsg = async (msg) => {
         return;
     }
 
-    const type = (msg instanceof Twitch.WhisperMessage) ? 'whisper' : 'privmsg';
+    // Check if channel is ignored
+    if (type === 'privmsg' && channelMeta.Ignore === 1) {
+        return;
+    }
+
 
     const message = msg.messageText.replace(sc.Config.parms.msgregex, '');
 
-    if (type === 'privmsg' && !bot.data.user.admins.includes(msg.senderUserID) && channelMeta.Ignore === 1) return;
 
     const content = message.split(/\s+/g);
     const command = content[0];
@@ -151,7 +151,6 @@ const handleMsg = async (msg) => {
         'msgObj': msg,
     };
 
-    const userMeta = await sc.Modules.user.get({Platform: cmdData.platform, id: cmdData.user.id, name: cmdData.user.login, createIfNotExists: true});
     const cmdMeta = sc.Command.get(commandstring);
 
     // No command found. Do nothing.
@@ -170,6 +169,7 @@ const handleMsg = async (msg) => {
     }
 
     try {
+        const userMeta = await sc.Modules.user.get({Platform: cmdData.platform, id: cmdData.user.id, name: cmdData.user.login, createIfNotExists: true});
         const cmdRun = await sc.Command.execute(commandstring, cmdData, userMeta);
         if (cmdRun.state === false) {
             if (cmdRun.data === 'cooldown') {
@@ -177,7 +177,7 @@ const handleMsg = async (msg) => {
             }
             return await send(cmdData, `Command Error: ${cmdRun.data}`);
         }
-        bot.commandCounter++;
+        sc.Temp.cmdCount++;
 
         if (!cmdMeta.Reply) {
             return;

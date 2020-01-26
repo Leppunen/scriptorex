@@ -16,12 +16,14 @@ sc.Command = (require('./modules/command'));
 sc.Twitch = (require('./client/twitch'));
 sc.Discord = (require('./client/discord'));
 
-bot.commandCounter = 0;
+sc.Temp.cmdCount = 0;
+sc.Temp.cmdFiles = new Map();
+sc.Temp.cmdAliases = new Map();
 
 // Get config from API
 async function initData() {
     try {
-        ({data: bot.data, data: sc.Data} = await sc.Utils.api.botnc('/bot'));
+        ({data: sc.Data} = await sc.Utils.api.botnc('/bot'));
     } catch (e) {
         sc.Logger.error('Error loading config: ' + e.message);
         process.exit(0);
@@ -29,11 +31,11 @@ async function initData() {
 }
 
 // Reload config from API
-bot.reload = async () => {
+sc.reload = async () => {
     try {
         await sc.Command.initialize();
         await sc.Command.sync();
-        ({data: bot.data, data: sc.Data} = await sc.Utils.api.botnc('/bot'));
+        ({data: sc.Data} = await sc.Utils.api.botnc('/bot'));
         return true;
     } catch (e) {
         sc.Logger.error(`Reload error: ${e}`);
@@ -46,6 +48,7 @@ async function start() {
     try {
         await initData();
         await sc.Command.initialize();
+        await sc.Command.sync();
         await sc.Twitch.initialize();
         await sc.Discord.connect();
     } catch (e) {

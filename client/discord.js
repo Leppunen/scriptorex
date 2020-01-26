@@ -59,6 +59,7 @@ client.on('messageCreate', async (msg) => {
             'guild': msg.channel.guild.name,
             'channel': msg.channel.name,
             'channelid': msg.channel.id,
+            'messageid': msg.id,
         },
         'platform': 'Discord',
         'command': commandstring,
@@ -85,7 +86,7 @@ client.on('messageCreate', async (msg) => {
         if (cmdRun.state === false) {
             return await send(cmdData, `Command Error: ${cmdRun.data}`);
         }
-        bot.commandCounter++;
+        sc.Temp.cmdCount++;
 
         if (!cmdRun.data) {
             return await send(cmdData, 'Command returned no data.');

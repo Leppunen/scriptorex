@@ -1,15 +1,15 @@
 module.exports.initialize = () => {
     return new Promise((resolve, reject) => {
-        bot.commands.clear();
-        bot.aliases.clear();
+        sc.Temp.cmdFiles.clear();
+        sc.Temp.cmdAliases.clear();
         sc.Utils.recurseDir(`${require.main.path}/commands`, /\.js$/).forEach((f) => {
             try {
                 delete require.cache[`${f}`];
                 const cmd = require(`${f}`);
-                bot.commands.set(cmd.help.name, cmd);
+                sc.Temp.cmdFiles.set(cmd.help.name, cmd);
                 if (cmd.help.aliases) {
                     cmd.help.aliases.forEach((alias) => {
-                        bot.aliases.set(alias, cmd.help.name);
+                        sc.Temp.cmdAliases.set(alias, cmd.help.name);
                     });
                 }
             } catch (e) {
@@ -18,14 +18,14 @@ module.exports.initialize = () => {
                 return reject(e);
             }
         });
-        sc.Logger.info(`Loaded ${bot.commands.size} commands!`);
+        sc.Logger.info(`Loaded ${sc.Temp.cmdFiles.size} commands!`);
         return resolve(true);
     });
 };
 
 module.exports.sync = async function commandSync() {
     const crypto = require('crypto');
-    const cmdFiles = Array.from(bot.commands.values()).filter((cmd) => !cmd.help.archived);
+    const cmdFiles = Array.from(sc.Temp.cmdFiles.values()).filter((cmd) => !cmd.help.archived);
     for (const cmd of cmdFiles) {
         const dbCmd = (await sc.Utils.db.query('SELECT ID, Name, Checksum, Code FROM Commands WHERE Name = ?', [cmd.help.name]))[0];
         if (!dbCmd) {
@@ -64,7 +64,7 @@ module.exports.get = (cmdString) => {
 
     if (command.Aliases) {
         try {
-            command.Aliases = eval(command.Aliases) || [];
+            command.Aliases = eval(command.Aliases);
         } catch (e) {
             sc.Logger.error(`Command ${command.Name} has an invalid alias definition.`);
             command.Aliases = [];
@@ -107,7 +107,7 @@ module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
             }
         }
 
-        await sc.Utils.misc.dblog('Command', cmdMeta.type === 'whisper' ? 'Whisper' : cmdMeta.channel, cmdMeta.user.name, cmdMeta.user.id, cmdMeta.command, cmdMeta.message.args.join(' ') || null, cmdResp || null);
+        await sc.Utils.misc.dblog('Command', cmdMeta.type === 'whisper' ? 'Whisper' : cmdMeta.channel, cmdMeta.user.name, cmdMeta.user.id, cmdMeta.command, cmdMeta.message.args.join(' ') || null, cmdResp ? cmdResp.substring(0, 300) : null);
 
         // Check the message against custom banphrases
         if (!commandData.Skip_Custom_Banphrases) {
