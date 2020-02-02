@@ -10,10 +10,6 @@
     "parserOptions": {
         "ecmaVersion": 9
     },
-    "globals": {
-        "bot": false,
-        "util": false
-    },
     "rules": {
         "indent": ["warn", 4],
         "linebreak-style": ["error", "unix"],
