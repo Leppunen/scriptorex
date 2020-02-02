@@ -9,3 +9,6 @@ module.exports.filter = require('./filter.js');
 
 // User
 module.exports.user = require('./user.js');
+
+// Channel
+module.exports.channel = require('./channel.js');

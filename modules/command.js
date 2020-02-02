@@ -76,6 +76,7 @@ module.exports.get = (cmdString) => {
 
 module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
     const commandData = this.get(cmdString);
+    const channelData = sc.Channel.get(cmdMeta.channel);
 
     if (!commandData) {
         return {state: false, cmd: cmdString, data: 'cmd-not-found'};
@@ -108,6 +109,11 @@ module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
         }
 
         await sc.Utils.misc.dblog('Command', cmdMeta.type === 'whisper' ? 'Whisper' : cmdMeta.channel, cmdMeta.user.name, cmdMeta.user.id, cmdMeta.command, cmdMeta.message.args.join(' ') || null, cmdResp ? cmdResp.substring(0, 300) : null);
+
+        // Check if the message has links and remove them if links are not allowed in the channel.
+        if (sc.Config.parms.linkRegex.test(cmdResp) && channelData.Extra.Links === false) {
+            cmdResp = cmdResp.replace(sc.Config.parms.linkRegex, ' [LINK] ');
+        }
 
         // Check the message against custom banphrases
         if (!commandData.Skip_Custom_Banphrases) {

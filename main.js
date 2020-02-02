@@ -11,6 +11,7 @@ sc.Utils = (require('./util'));
 sc.Logger = (require('./util/winston'));
 sc.Modules = (require('./modules'));
 sc.Command = (require('./modules/command'));
+sc.Channel = (require('./modules/channel'));
 
 // Load Clients
 sc.Twitch = (require('./client/twitch'));
