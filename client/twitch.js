@@ -14,7 +14,8 @@ client.use(new Twitch.SlowModeRateLimiter(client, 20));
 client.timeouts = new Set();
 
 client.initialize = async () => {
-    await client.joinAll(sc.Data.channels.filter((channel) => channel.Connect === 1 && channel.Platform === 'Twitch').map((channel) => channel.Name));
+    const channels = sc.Channel.getJoinable('Twitch');
+    await client.joinAll(channels);
     client.connect();
 };
 

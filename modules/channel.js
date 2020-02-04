@@ -17,3 +17,14 @@ module.exports.get = (channel) => {
 
     return channelData;
 };
+
+module.exports.getJoinable = (platform) => {
+    switch (platform) {
+    case 'Twitch':
+        return sc.Data.channels.filter((channel) => channel.Connect === 1 && channel.Platform === 'Twitch').map((channel) => channel.Name);
+    case 'Discord':
+        return sc.Data.channels.filter((channel) => channel.Connect === 1 && channel.Platform === 'Discord').map((channel) => channel.Name);
+    default:
+        return null;
+    }
+};
