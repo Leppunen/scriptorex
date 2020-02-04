@@ -15,6 +15,7 @@ sc.Channel = (require('./modules/channel'));
 
 // Load Clients
 sc.Twitch = (require('./client/twitch'));
+sc.TwitchPubSub = (require('./client/twitch-pubsub'));
 sc.Discord = (require('./client/discord'));
 
 sc.Temp.cmdCount = 0;
