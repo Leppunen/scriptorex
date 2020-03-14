@@ -1,8 +1,11 @@
 // Recursive directory read
 module.exports.recurseDir = require('./recurseDir.js').find;
 
-// Axios API instances
-module.exports.api = require('./api.js');
+// Got API instances
+module.exports.got = require('./apiClients.js');
+
+// Redis Cache
+module.exports.cache = require('./redis.js');
 
 // Miscellaneous utilities
 module.exports.misc = require('./misc.js');

@@ -1,6 +1,5 @@
 const Discord = require('eris');
 const chalk = require('chalk');
-const util = require('util');
 const client = new Discord.Client(sc.Config.discord.token);
 
 client.on('ready', () => {
@@ -8,11 +7,11 @@ client.on('ready', () => {
 });
 
 client.on('warn', (msg, id) => {
-    sc.Logger.warn(`${chalk.yellow('[WARN]')} || Warning occurred in Eris: ${id} -> ${msg}`);
+    sc.Logger.warn(`Warning occurred in Eris: ${id} -> ${msg}`);
 });
 
 client.on('error', (msg, id) => {
-    sc.Logger.error(`${chalk.red('[ERROR]')} || Error occurred in Eris: ${id} -> ${msg}`);
+    sc.Logger.error(`Error occurred in Eris: ${id} -> ${msg}`);
 });
 
 client.on('messageCreate', async (msg) => {
@@ -93,10 +92,6 @@ client.on('messageCreate', async (msg) => {
         }
         return await send(cmdData, cmdRun.data);
     } catch (e) {
-        if (e.response) {
-            await sc.Utils.misc.dberror('AxiosError', e.message, util.inspect(e.response));
-        }
-        sc.Logger.json(e);
         await sc.Utils.misc.dberror(e.name, e.message, e.stack);
         if (e instanceof SyntaxError) {
             sc.Logger.warn(`${chalk.red('[SyntaxError]')} || ${e.name} -> ${e.message} ||| ${e.stack}`);

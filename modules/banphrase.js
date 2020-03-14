@@ -2,10 +2,10 @@ const chalk = require('chalk');
 module.exports.pajbot = async (meta, msg) => {
     if (meta.channelMeta.Banphrase_URL) {
         try {
-            const {data} = await sc.Utils.api.ban(`https://${meta.channelMeta.Banphrase_URL}/api/v1/banphrases/test`, {data: {'message': msg}});
-            if (data.banned) {
-                sc.Logger.warn(`${chalk.red('[BANPHRASE]')} || Banphrase triggered in ${chalk.green(meta.channel)} -> ${chalk.magenta(data.banphrase_data.phrase)}`);
-                await sc.Utils.misc.dblog('Banphrase', meta.channel, meta.user.name, meta.user.id, msg, null, data.banphrase_data);
+            const {body: {banned, banphrase_data}} = await sc.Utils.got.ban(`https://${meta.channelMeta.Banphrase_URL}/api/v1/banphrases/test`, {json: {'message': msg}});
+            if (banned) {
+                sc.Logger.warn(`${chalk.red('[BANPHRASE]')} || Banphrase triggered in ${chalk.green(meta.channel)} -> ${chalk.magenta(banphrase_data.phrase)}`);
+                await sc.Utils.misc.dblog('Banphrase', meta.channel, meta.user.name, meta.user.id, msg, null, banphrase_data);
                 return 'No can do, Response contains a banned phrase.';
             } else {
                 return msg;

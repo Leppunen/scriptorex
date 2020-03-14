@@ -39,26 +39,22 @@ module.exports.humanizeTimeStamp = (stamp, options) => {
 };
 
 module.exports.paste = async (pastedata) => {
-    const {data} = await sc.Utils.api.paste({data: pastedata.toString()});
-    return `https://paste.ivr.fi/${data.key}`;
+    const {key} = await sc.Utils.got.paste({body: pastedata.toString()}).json();
+    return `https://paste.ivr.fi/${key}`;
 };
 
 module.exports.push = async (title, message) => {
-    try {
-        const {data} = await sc.Utils.api.push({data: {message: message, title: title}});
-        if (data.status === 1) {
-            return true;
-        } else {
-            return false;
-        }
-    } catch (err) {
-        throw new Error(err.response.data.errors);
+    const {status} = await sc.Utils.got.push({json: {message: message, title: title}}).json();
+    if (status === 1) {
+        return true;
+    } else {
+        return false;
     }
 };
 
 module.exports.supiactive = async () => {
-    const {data: {statusCode, data}} = await sc.Utils.api.supinic.put('/bot/active');
-    if (statusCode === 200 && data.success) {
+    const {data} = await sc.Utils.got.supinic.put('/bot/active').json();
+    if (data.success) {
         return 'Success';
     }
 };
@@ -66,12 +62,12 @@ module.exports.supiactive = async () => {
 module.exports.getVideoInfo = async (url) => {
     let tags = '';
     let tagData = '';
-    ({data: {data, data: {type, extra, extra: {tags: tagData}}}} = await sc.Utils.api.supinic(`/track/fetch/?url=${url}`));
+    ({data, data: {type, extra, extra: {tags: tagData}}} = await sc.Utils.got.supinic(`/track/fetch/?url=${url}`)).json();
     if (type === 'bilibili') {
         tagData = tagData.map((item) => item.name);
     }
     if (type === 'bilibili' || type === 'nicovideo') {
-        ({data: {translation: tags}} = await sc.Utils.api.bot(`/translate/?text=${encodeURI(tagData)}`));
+        ({body: {translation: tags}} = await sc.Utils.got.bot(`translate/?text=${encodeURI(tagData)}`));
     }
     if (tagData && type === 'youtube') {
         tagData = tagData.join(' - ');

@@ -101,13 +101,18 @@ const handleMsg = async (msg) => {
         }
     }
 
+    // Ignore messages from self.
+    if (msg.senderUsername === sc.Config.twitch.username) {
+        return;
+    }
+
     // If the bot is timed out, do not process anything
     if (client.timeouts.has(msg.channelName)) {
         return;
     }
 
-    // Ignore messages from self.
-    if (msg.senderUsername === sc.Config.twitch.username) {
+    // If the stream is live and bot should be silent during live, do nothing.
+    if (type === 'privmsg' && channelMeta.Extra.silenceIfLive && sc.Utils.cache.redis.get(`streamLive-${channelMeta.Name}`)) {
         return;
     }
 
@@ -121,9 +126,7 @@ const handleMsg = async (msg) => {
         return;
     }
 
-
     const message = msg.messageText.replace(sc.Config.parms.msgregex, '');
-
 
     const content = message.split(/\s+/g);
     const command = content[0];
@@ -196,10 +199,6 @@ const handleMsg = async (msg) => {
         }
         return await send(cmdData, cmdRun.data);
     } catch (e) {
-        if (e.response) {
-            await sc.Utils.misc.dberror('AxiosError', e.message, utils.inspect(e.response));
-        }
-        sc.Logger.json(e);
         await sc.Utils.misc.dberror(e.name, e.message, e.stack);
         if (e instanceof SyntaxError) {
             sc.Logger.warn(`${chalk.red('[SyntaxError]')} || ${e.name} -> ${e.message} ||| ${e.stack}`);

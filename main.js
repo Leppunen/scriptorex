@@ -25,7 +25,7 @@ sc.Temp.cmdAliases = new Map();
 // Get config from API
 async function initData() {
     try {
-        ({data: sc.Data} = await sc.Utils.api.botnc('/bot'));
+        sc.Data = await sc.Utils.got.bot('bot/config').json();
     } catch (e) {
         sc.Logger.error('Error loading config: ' + e.message);
         process.exit(0);
@@ -37,7 +37,7 @@ sc.reload = async () => {
     try {
         await sc.Command.initialize();
         await sc.Command.sync();
-        ({data: sc.Data} = await sc.Utils.api.botnc('/bot'));
+        sc.Data = await sc.Utils.got.bot('bot/config').json();
         return true;
     } catch (e) {
         sc.Logger.error(`Reload error: ${e}`);
