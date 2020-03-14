@@ -97,36 +97,32 @@ module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
         return {state: false, cmd: cmdString, data: filtered};
     }
 
-    try {
-        let cmdResp = await eval(commandData.Code)(cmdMeta);
+    let cmdResp = await eval(commandData.Code)(cmdMeta);
 
-        if (commandData.Ping) {
-            if (cmdMeta.platform === 'Twitch') {
-                cmdResp = `@${cmdMeta.user.name}, ${cmdResp}`;
-            } else if (cmdMeta.platform === 'Discord') {
-                cmdResp = `${cmdMeta.user.mentionString}, ${cmdResp}`;
-            }
+    if (commandData.Ping) {
+        if (cmdMeta.platform === 'Twitch') {
+            cmdResp = `@${cmdMeta.user.name}, ${cmdResp}`;
+        } else if (cmdMeta.platform === 'Discord') {
+            cmdResp = `${cmdMeta.user.mentionString}, ${cmdResp}`;
         }
-
-        await sc.Utils.misc.dblog('Command', cmdMeta.type === 'whisper' ? 'Whisper' : cmdMeta.channel, cmdMeta.user.name, cmdMeta.user.id, cmdMeta.command, cmdMeta.message.args.join(' ') || null, cmdResp ? cmdResp.substring(0, 300) : null);
-
-        // Check if the message has links and remove them if links are not allowed in the channel.
-        if (sc.Config.parms.linkRegex.test(cmdResp) && channelData.Extra.Links === false) {
-            cmdResp = cmdResp.replace(sc.Config.parms.linkRegex, ' [LINK] ');
-        }
-
-        // Check the message against custom banphrases
-        if (!commandData.Skip_Custom_Banphrases) {
-            cmdResp = await sc.Modules.banphrase.custom(cmdMeta.channel, cmdResp);
-        }
-
-        // Check the message against pajbot banphrase API
-        if (cmdMeta.platform === 'Twitch', cmdMeta.channelMeta.Protect && !commandData.Skip_API_Banphrases) {
-            cmdResp = await sc.Modules.banphrase.pajbot(cmdMeta, cmdResp);
-        }
-
-        return {state: true, cmd: cmdString, data: cmdResp};
-    } catch (e) {
-        throw new Error(e);
     }
+
+    await sc.Utils.misc.dblog('Command', cmdMeta.type === 'whisper' ? 'Whisper' : cmdMeta.channel, cmdMeta.user.name, cmdMeta.user.id, cmdMeta.command, cmdMeta.message.args.join(' ') || null, cmdResp ? cmdResp.substring(0, 300) : null);
+
+    // Check if the message has links and remove them if links are not allowed in the channel.
+    if (sc.Config.parms.linkRegex.test(cmdResp) && channelData.Extra.Links === false) {
+        cmdResp = cmdResp.replace(sc.Config.parms.linkRegex, ' [LINK] ');
+    }
+
+    // Check the message against custom banphrases
+    if (!commandData.Skip_Custom_Banphrases) {
+        cmdResp = await sc.Modules.banphrase.custom(cmdMeta.channel, cmdResp);
+    }
+
+    // Check the message against pajbot banphrase API
+    if (cmdMeta.platform === 'Twitch', cmdMeta.channelMeta.Protect && !commandData.Skip_API_Banphrases) {
+        cmdResp = await sc.Modules.banphrase.pajbot(cmdMeta, cmdResp);
+    }
+
+    return {state: true, cmd: cmdString, data: cmdResp};
 };
