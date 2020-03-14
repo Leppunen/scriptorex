@@ -9,18 +9,19 @@
     "author": "Leppunen",
     "license": "N/A",
     "dependencies": {
-        "@yarnpkg/pnpify": "^2.0.0-rc.18",
+        "@yarnpkg/pnpify": "^2.0.0-rc.19",
         "chalk": "^3.0.0",
         "dank-twitch-irc": "^3.0.7",
         "eris": "^0.11.2",
         "got": "^10.6.0",
-        "humanize-duration": "^3.21.0",
+        "humanize-duration": "^3.22.0",
         "ioredis": "^4.16.0",
         "mariadb": "^2.2.0",
         "modern-rcon": "^1.0.3",
         "reconnecting-websocket": "^4.4.0",
         "shelljs": "^0.8.3",
-        "winston": "^3.2.1"
+        "winston": "^3.2.1",
+        "ws": "^7.2.3"
     },
     "devDependencies": {
         "eslint": "^6.8.0",

@@ -121,13 +121,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/fslib@npm:^2.0.0-rc.16":
-  version: 2.0.0-rc.16
-  resolution: "@yarnpkg/fslib@npm:2.0.0-rc.16"
+"@yarnpkg/fslib@npm:^2.0.0-rc.17":
+  version: 2.0.0-rc.17
+  resolution: "@yarnpkg/fslib@npm:2.0.0-rc.17"
   dependencies:
     "@yarnpkg/libzip": ^2.0.0-rc.10
-    tmp: ^0.1.0
-  checksum: 2/89c4dff7e203a755fd4e2ce845ef777c6a3fec394085c6b3d9e23629baf8900f6277e2d4e3df35a87a45b08cb9e4d564a86d6d7df81b18ee0846d005dfc970a3
+  checksum: 2/4e90a046f1645bac793c88811beb7da945af63cc9ce48930199714050c601adb52c7dab1dd3cac7d9fb200dbade4bcf15248925b98ccb3ed7546c339b9f66817
   languageName: node
   linkType: hard
 
@@ -140,11 +139,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/pnpify@npm:^2.0.0-rc.18":
-  version: 2.0.0-rc.18
-  resolution: "@yarnpkg/pnpify@npm:2.0.0-rc.18"
+"@yarnpkg/pnpify@npm:^2.0.0-rc.19":
+  version: 2.0.0-rc.19
+  resolution: "@yarnpkg/pnpify@npm:2.0.0-rc.19"
   dependencies:
-    "@yarnpkg/fslib": ^2.0.0-rc.16
+    "@yarnpkg/fslib": ^2.0.0-rc.17
     chalk: ^3.0.0
     comment-json: ^2.2.0
     cross-spawn: 6.0.5
@@ -158,7 +157,7 @@ __metadata:
       optional: true
   bin:
     pnpify: ./lib/cli.js
-  checksum: 2/ea1146fe2318480c7a082d79dcdfa1863ff8bc31fd94059d00119bc7aaf07600e334cda5ff8000579c8dbfcf746127db7a07537c9ec0dc813be89edb31a30b1e
+  checksum: 2/5218e470931c16e4f891f1c7f0330e819ff81a5146afd992dd7360fd6a2faaf6ed97f93fdf51b9be3c05531f4893fc330bf442c7a086fd92692d2f2dc01ca1b8
   languageName: node
   linkType: hard
 
@@ -1000,7 +999,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"humanize-duration@npm:^3.21.0":
+"humanize-duration@npm:^3.22.0":
   version: 3.22.0
   resolution: "humanize-duration@npm:3.22.0"
   checksum: 2/01e5c18ecc32a1961e3cb4d4fa508ddc5e7fce6489e8672041f3e86b8c83e500019bc0ffee867db72992bf8955d33c7ced15236ddee825c844b53c056c6b7f5d
@@ -1763,17 +1762,6 @@ resolve@^1.1.6:
   languageName: node
   linkType: hard
 
-"rimraf@npm:^2.6.3":
-  version: 2.7.1
-  resolution: "rimraf@npm:2.7.1"
-  dependencies:
-    glob: ^7.1.3
-  bin:
-    rimraf: ./bin.js
-  checksum: 2/059efac2838ef917d4d1da1d80e724ad28c120cdf14ca6ed27ca72db2dc70be3e25421cba5947c6ec3d804c1d2bb9a247254653816ee0722bf943ffdd1ae19ef
-  languageName: node
-  linkType: hard
-
 "run-async@npm:^2.4.0":
   version: 2.4.0
   resolution: "run-async@npm:2.4.0"
@@ -1817,20 +1805,21 @@ resolve@^1.1.6:
   version: 0.0.0-use.local
   resolution: "scriptorex@workspace:."
   dependencies:
-    "@yarnpkg/pnpify": ^2.0.0-rc.18
+    "@yarnpkg/pnpify": ^2.0.0-rc.19
     chalk: ^3.0.0
     dank-twitch-irc: ^3.0.7
     eris: ^0.11.2
     eslint: ^6.8.0
     eslint-config-google: ^0.14.0
     got: ^10.6.0
-    humanize-duration: ^3.21.0
+    humanize-duration: ^3.22.0
     ioredis: ^4.16.0
     mariadb: ^2.2.0
     modern-rcon: ^1.0.3
     reconnecting-websocket: ^4.4.0
     shelljs: ^0.8.3
     winston: ^3.2.1
+    ws: ^7.2.3
   languageName: unknown
   linkType: soft
 
@@ -2090,15 +2079,6 @@ resolve@^1.1.6:
   languageName: node
   linkType: hard
 
-"tmp@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "tmp@npm:0.1.0"
-  dependencies:
-    rimraf: ^2.6.3
-  checksum: 2/b505e9f4f5e8076a1789fa1cec50b42220fdb90dec3e44ff0598d74701e340333ef7c28a55ed2d59b24112e2668e98e92852352ad4dc20352250a7be5cc1a973
-  languageName: node
-  linkType: hard
-
 "to-readable-stream@npm:^2.0.0":
   version: 2.1.0
   resolution: "to-readable-stream@npm:2.1.0"
@@ -2248,7 +2228,7 @@ resolve@^1.1.6:
   languageName: node
   linkType: hard
 
-"ws@npm:^7.0.0, ws@npm:^7.2.1":
+"ws@npm:^7.0.0, ws@npm:^7.2.1, ws@npm:^7.2.3":
   version: 7.2.3
   resolution: "ws@npm:7.2.3"
   peerDependencies:
