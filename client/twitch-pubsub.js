@@ -1,21 +1,22 @@
-const WebSocket = require('ws');
+const RWS = require('reconnecting-websocket');
+const WS = require('ws');
 const chalk = require('chalk');
 const crypto = require('crypto');
 
-const ps = new WebSocket('wss://pubsub-edge.twitch.tv');
+const ps = new RWS('wss://pubsub-edge.twitch.tv', [], {WebSocket: WS});
 
-ps.on('open', () => {
+ps.addEventListener('open', () => {
     sc.Logger.info(`${chalk.green('[CONNECTED]')} || Connected to Twitch PubSub. Subscribing to topics.`);
     for (const channel of sc.Channel.getJoinable('Twitch')) {
         listenStreamStatus(channel);
+        listenChannelPoints(channel);
     }
 });
 
-ps.on('message', (data) => {
+ps.addEventListener('message', ({data}) => {
     const msg = JSON.parse(data);
     switch (msg.type) {
     case 'PONG':
-        // sc.Logger.debug('Received a PONG from PubSub');
         break;
 
     case 'RESPONSE':
@@ -28,22 +29,27 @@ ps.on('message', (data) => {
             const msgTopic = msg.data.topic;
             switch (msgData.type) {
             case 'viewcount':
-                handleWSMsg({channel: msgTopic.replace('video-playback.', ''), live: true, viewcount: msgData.viewers});
+                handleWSMsg({channel: msgTopic.replace('video-playback.', ''), type: msgData.type, viewcount: msgData.viewers});
                 break;
             case 'commercial':
                 break;
             case 'stream-up':
-                handleWSMsg({channel: msgTopic.replace('video-playback.', ''), live: true});
-                break;
             case 'stream-down':
-                handleWSMsg({channel: msgTopic.replace('video-playback.', ''), live: false});
+                handleWSMsg({channel: msgTopic.replace('video-playback.', ''), type: msgData.type});
+                break;
+            case 'reward-redeemed':
+                handleWSMsg({channel: msgData.data.redemption.channel_id, type: msgData.type, data: msgData.data.redemption});
                 break;
             default:
-                sc.Logger.warn(`Unknown topic message type: [${msgTopic}] ${msgData.type}`);
+                sc.Logger.warn(`Unknown topic message type: [${msgTopic}] ${JSON.stringify(msgData)}`);
             }
         } else {
             sc.Logger.warn(`No data associated with message [${JSON.stringify(msg)}]`);
         }
+        break;
+    case 'RECONNECT':
+        sc.Logger.warn('Pubsub server sent a reconnect message. restarting the socket');
+        ps.close();
         break;
     default:
         sc.Logger.warn(`Unknown PubSub Message Type: ${msg.type}`);
@@ -53,7 +59,6 @@ ps.on('message', (data) => {
 const listenStreamStatus = (channel) => {
     const channelMeta = sc.Channel.get(channel);
     if (!channelMeta.Name) return null;
-    channelMeta.pubsubTopics = [];
     const nonce = crypto.randomBytes(20).toString('hex').slice(-8);
     channelMeta.pubsubTopics.push({topic: 'video-playback', nonce: nonce});
     const message = {
@@ -67,16 +72,45 @@ const listenStreamStatus = (channel) => {
     ps.send(JSON.stringify(message));
 };
 
+const listenChannelPoints = (channel) => {
+    const channelMeta = sc.Channel.get(channel);
+    if (!channelMeta.Name) return null;
+    if (!channelMeta.Extra.listenChannelPoints) return null;
+    const nonce = crypto.randomBytes(20).toString('hex').slice(-8);
+    channelMeta.pubsubTopics.push({topic: 'channel-points', nonce: nonce});
+    const message = {
+        'type': 'LISTEN',
+        'nonce': nonce,
+        'data': {
+            'topics': [`community-points-channel-v1.${channelMeta.UserID}`],
+            'auth_token': sc.Config.twitch.token,
+        },
+    };
+    ps.send(JSON.stringify(message));
+};
+
 const handleWSMsg = async (msg = {}) => {
     const channelMeta = sc.Channel.get(msg.channel);
     if (!channelMeta.Name) return null;
-
-    if (msg.live === true && !channelMeta.streamLive) {
-        sc.Logger.debug(`Channel ${channelMeta.Name} went live`);
-        channelMeta.streamLive = true;
-    } else if (msg.live === false) {
-        sc.Logger.debug(`Channel ${channelMeta.Name} went offline`);
-        channelMeta.streamLive = false;
+    if (msg) {
+        switch (msg.type) {
+        case 'viewcount':
+        case 'stream-up':
+            await sc.Utils.cache.redis.set(`streamLive-${channelMeta.Name}`, 'true', 'EX', 35);
+            if (!channelMeta.streamLive) {
+                sc.Logger.debug(`Channel ${channelMeta.Name} went live`);
+                channelMeta.streamLive = true;
+            }
+            break;
+        case 'stream-down':
+            await sc.Utils.cache.redis.del(`streamLive-${channelMeta.Name}`);
+            sc.Logger.debug(`Channel ${channelMeta.Name} went offline`);
+            channelMeta.streamLive = false;
+            break;
+        case 'reward-redeemed':
+            await sc.Twitch.say(channelMeta.Name, `HONEYDETECTED 👉 CHANNELPOINTREDEMPTIONDETECTED By ${msg.data.user.display_name} -> [${msg.data.reward.title}]`);
+            break;
+        }
     }
 };
 
@@ -84,12 +118,13 @@ const handleWSResp = (msg) => {
     if (!msg.nonce) {
         return sc.Logger.warn(`Unknown message without nonce: ${JSON.stringify(msg)}`);
     }
+
     const channelMeta = sc.Data.channels.find((chn) => chn.pubsubTopics && chn.pubsubTopics.some((i) => i.nonce === msg.nonce));
     const topicMeta = channelMeta.pubsubTopics.find((i) => i.nonce === msg.nonce);
     if (!channelMeta.Name || !topicMeta) return null;
 
     if (msg.error) {
-        sc.Logger.warn(`Error occurred while subscribing to topic for ${channelMeta.Name}: ${msg.error}`);
+        sc.Logger.warn(`Error occurred while subscribing to topic ${topicMeta.topic} for ${channelMeta.Name}: ${msg.error}`);
     } else {
         sc.Logger.info(`Successfully subscribed to topic ${topicMeta.topic} for ${channelMeta.Name}`);
     }

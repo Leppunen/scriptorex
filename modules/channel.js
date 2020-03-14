@@ -1,8 +1,12 @@
 module.exports.get = (channel) => {
-    const channelData = sc.Data.channels.find((chn) => chn.Name === channel);
+    const channelData = sc.Data.channels.find((chn) => chn.Name === channel || chn.UserID === channel);
 
     if (!channelData) {
         return {};
+    }
+
+    if (!Array.isArray(channelData.pubsubTopics)) {
+        channelData.pubsubTopics = [];
     }
 
     if (channelData.Extra && typeof channelData.Extra !== 'object') {
