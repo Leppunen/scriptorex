@@ -4,20 +4,21 @@
     "description": "Lidl twitchbot",
     "private": true,
     "scripts": {
-        "start": "node main.js"
+        "start": "yarn node api.js"
     },
     "author": "Leppunen",
     "license": "N/A",
     "dependencies": {
-        "axios": "^0.18.1",
-        "axios-cache-adapter": "^2.5.0",
+        "@yarnpkg/pnpify": "^2.0.0-rc.18",
         "chalk": "^3.0.0",
-        "dank-twitch-irc": "^3.0.5",
+        "dank-twitch-irc": "^3.0.7",
         "eris": "^0.11.2",
+        "got": "^10.6.0",
         "humanize-duration": "^3.21.0",
-        "mariadb": "^2.1.4",
+        "ioredis": "^4.16.0",
+        "mariadb": "^2.2.0",
         "modern-rcon": "^1.0.3",
-        "qs": "^6.9.1",
+        "reconnecting-websocket": "^4.4.0",
         "shelljs": "^0.8.3",
         "winston": "^3.2.1"
     },

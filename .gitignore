@@ -4,5 +4,9 @@ ecosystem.config.js
 .vscode/
 
 node_modules/
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+.pnp.*
 
 commands/*
