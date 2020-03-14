@@ -23,6 +23,7 @@
         "max-len": ["warn", 250, {"ignoreStrings": true, "ignoreTemplateLiterals": true}],
         "eqeqeq": "error",
         "no-throw-literal": "error",
+        "require-await": "warn",
         "no-multiple-empty-lines": ["error", {"maxEOF": 1, "max": 2}]
     }
 }
