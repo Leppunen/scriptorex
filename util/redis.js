@@ -11,6 +11,18 @@ redis.on('ready', () => {
 
 module.exports.redis = redis;
 
+module.exports.set = async (key, data, expiry = 120) => {
+    if (expiry === 0) {
+        await redis.set(key, data);
+    } else {
+        await redis.set(key, data, 'EX', expiry);
+    }
+};
+
+module.exports.get = async (key) => {
+    return await redis.get(key);
+};
+
 module.exports.getBase64 = async (name) => {
     const data = await redis.get(name);
     if (!data) {
