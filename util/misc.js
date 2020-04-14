@@ -53,7 +53,7 @@ module.exports.push = async (title, message) => {
 };
 
 module.exports.supiactive = async () => {
-    const {data} = await sc.Utils.got.supinic.put('/bot/active').json();
+    const {data} = await sc.Utils.got.supinic.put('bot-program/bot/active').json();
     if (data.success) {
         return 'Success';
     }
