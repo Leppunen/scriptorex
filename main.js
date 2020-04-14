@@ -51,7 +51,9 @@ async function start() {
         await initData();
         await sc.Command.initialize();
         await sc.Command.sync();
+        await sc.Modules.token.check();
         await sc.Twitch.initialize();
+        await sc.TwitchPubSub.connect();
         await sc.Discord.connect();
     } catch (e) {
         sc.Logger.error(`Error encountered during initialization: ${e}`);

@@ -49,19 +49,22 @@ module.exports.kraken = got.extend({
 });
 
 // Twitch Helix API
-module.exports.helix = got.extend({
-    prefixUrl: 'https://api.twitch.tv/helix',
-    timeout: 1500,
-    responseType: 'json',
-    headers: {
-        'Client-ID': sc.Config.twitch.clientid,
-    },
-});
+module.exports.helix = async () => {
+    return got.extend({
+        prefixUrl: 'https://api.twitch.tv/helix',
+        timeout: 1500,
+        responseType: 'json',
+        headers: {
+            'Client-ID': sc.Config.twitch.clientid,
+            'Authorization': `OAuth ${await sc.Utils.cache.get('oauth-token')}`,
+        },
+    });
+};
 
 // Twitch TMI API
 module.exports.tmi = got.extend({
     prefixUrl: 'https://tmi.twitch.tv',
-    timeout: 1500,
+    timeout: 3500,
     responseType: 'json',
 });
 
@@ -86,7 +89,7 @@ module.exports.paste = got.extend({
 // Logs API
 module.exports.logs = got.extend({
     prefixUrl: 'https://logs.ivr.fi',
-    timeout: 800,
+    timeout: 2500,
     responseType: 'json',
     headers: {
         'Content-Type': 'application/json',

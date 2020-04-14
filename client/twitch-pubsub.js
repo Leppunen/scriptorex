@@ -3,7 +3,11 @@ const WS = require('ws');
 const chalk = require('chalk');
 const crypto = require('crypto');
 
-const ps = new RWS('wss://pubsub-edge.twitch.tv', [], {WebSocket: WS});
+const ps = new RWS('wss://pubsub-edge.twitch.tv', [], {WebSocket: WS, startClosed: true});
+
+module.exports.connect = () => {
+    ps.reconnect();
+};
 
 ps.addEventListener('open', () => {
     sc.Logger.info(`${chalk.green('[CONNECTED]')} || Connected to Twitch PubSub. Subscribing to topics.`);
@@ -56,7 +60,7 @@ ps.addEventListener('message', ({data}) => {
     }
 });
 
-const listenStreamStatus = (channel) => {
+const listenStreamStatus = async (channel) => {
     const channelMeta = sc.Channel.get(channel);
     if (!channelMeta.Name) return null;
     const nonce = crypto.randomBytes(20).toString('hex').slice(-8);
@@ -66,13 +70,13 @@ const listenStreamStatus = (channel) => {
         'nonce': nonce,
         'data': {
             'topics': [`video-playback.${channelMeta.Name}`],
-            'auth_token': sc.Config.twitch.token,
+            'auth_token': await sc.Utils.cache.get('oauth-token'),
         },
     };
     ps.send(JSON.stringify(message));
 };
 
-const listenChannelPoints = (channel) => {
+const listenChannelPoints = async (channel) => {
     const channelMeta = sc.Channel.get(channel);
     if (!channelMeta.Name) return null;
     if (!channelMeta.Extra.listenChannelPoints) return null;
@@ -83,7 +87,7 @@ const listenChannelPoints = (channel) => {
         'nonce': nonce,
         'data': {
             'topics': [`community-points-channel-v1.${channelMeta.UserID}`],
-            'auth_token': sc.Config.twitch.token,
+            'auth_token': await sc.Utils.cache.get('oauth-token'),
         },
     };
     ps.send(JSON.stringify(message));
@@ -95,17 +99,25 @@ const handleWSMsg = async (msg = {}) => {
     if (msg) {
         switch (msg.type) {
         case 'viewcount':
+            await sc.Utils.cache.set(`streamLive-${channelMeta.Name}`, 'true', 35);
+            break;
         case 'stream-up':
-            await sc.Utils.cache.redis.set(`streamLive-${channelMeta.Name}`, 'true', 'EX', 35);
+            await sc.Utils.cache.set(`streamLive-${channelMeta.Name}`, 'true', 35);
             if (!channelMeta.streamLive) {
                 sc.Logger.debug(`Channel ${channelMeta.Name} went live`);
                 channelMeta.streamLive = true;
+                if (channelMeta.Name === 'supinic' || channelMeta.Name === 'pajlada') {
+                    await sc.Twitch.say(channelMeta.Name, 'HONEYDETECTED 👉 Channel is live!');
+                }
             }
             break;
         case 'stream-down':
             await sc.Utils.cache.redis.del(`streamLive-${channelMeta.Name}`);
             sc.Logger.debug(`Channel ${channelMeta.Name} went offline`);
             channelMeta.streamLive = false;
+            if (channelMeta.Name === 'supinic') {
+                await sc.Twitch.say(channelMeta.Name, 'peepoSadDank 👉 Channel is offline!');
+            }
             break;
         case 'reward-redeemed':
             await sc.Twitch.say(channelMeta.Name, `HONEYDETECTED 👉 CHANNELPOINTREDEMPTIONDETECTED By ${msg.data.user.display_name} -> [${msg.data.reward.title}]`);

@@ -12,3 +12,9 @@ module.exports.user = require('./user.js');
 
 // Channel
 module.exports.channel = require('./channel.js');
+
+// Keywords
+module.exports.keyword = require('./keyword.js');
+
+// Token
+module.exports.token = require('./token.js');
