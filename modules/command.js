@@ -76,7 +76,7 @@ module.exports.get = (cmdString) => {
 
 module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
     const commandData = this.get(cmdString);
-    const channelData = sc.Channel.get(cmdMeta.channel);
+    const channelData = sc.Channel.get(cmdMeta.platform === 'Twitch' ? cmdMeta.channel : cmdMeta.channelid);
 
     if (!commandData) {
         return {state: false, cmd: cmdString, data: 'cmd-not-found'};
