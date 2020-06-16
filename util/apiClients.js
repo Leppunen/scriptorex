@@ -56,7 +56,7 @@ module.exports.helix = async () => {
         responseType: 'json',
         headers: {
             'Client-ID': sc.Config.twitch.clientid,
-            'Authorization': `OAuth ${await sc.Utils.cache.get('oauth-token')}`,
+            'Authorization': `Bearer ${await sc.Utils.cache.get('oauth-token')}`,
         },
     });
 };
@@ -193,5 +193,37 @@ module.exports.xkcd = got.extend({
     prefixUrl: 'https://xkcd.com',
     headers: {
         'Content-Type': 'application/json',
+    },
+});
+
+// 5E7EN API
+module.exports.simon36 = got.extend({
+    timeout: 6000,
+    responseType: 'json',
+    prefixUrl: 'https://api.5e7en.me',
+    headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'scriptorex / Leppunen@twitch',
+    },
+});
+
+// pajbot2 API
+module.exports.pajbot2 = got.extend({
+    timeout: 6000,
+    responseType: 'json',
+    prefixUrl: 'https://paj.pajbot.com/api',
+    headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'scriptorex / Leppunen@twitch',
+    },
+});
+
+// reddit API
+module.exports.reddit = got.extend({
+    prefixUrl: 'https://www.reddit.com/r',
+    responseType: 'json',
+    throwHttpErrors: false,
+    headers: {
+        'Cookie': '_options={%22pref_quarantine_optin%22:true};',
     },
 });
