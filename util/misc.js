@@ -26,6 +26,16 @@ module.exports.uptime = () => {
     });
 };
 
+module.exports.secondConvert = (seconds) => {
+    const ms = seconds * 1000;
+    return shortHumanize(ms, {
+        units: ['h', 'm', 's', 'ms'],
+        round: true,
+        conjunction: ' and ',
+        spacer: '',
+    });
+};
+
 module.exports.humanizeTimeStamp = (stamp, options) => {
     const ms = new Date().getTime() - Date.parse(stamp);
     options = options || {
