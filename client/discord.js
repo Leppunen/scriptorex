@@ -31,11 +31,11 @@ client.on('messageCreate', async (msg) => {
     }
 
     const message = msg.content.replace(sc.Config.parms.msgregex, '');
-    const channelMeta = sc.Data.channels.find((chn) => chn.Name === msg.channel.id) || {};
+    let channelMeta = sc.Channel.get(msg.channel.id);
 
-    // Create a channel in the database if it does not exist
-    if (Object.entries(channelMeta).length === 0) {
-        await sc.Utils.db.query('INSERT INTO Channel (Name, Description, Platform, UserID) VALUES (?, ?, ?, ?)', [msg.channel.id, `Channel ${msg.channel.name} in Server ${msg.channel.guild.name}`, 'Discord', msg.channel.guild.id]);
+    if (!channelMeta.ID) {
+        await sc.Utils.db.query('INSERT INTO Channel (Name, Description, Platform, Platform_ID) VALUES (?, ?, ?, ?)', [msg.channel.id, `Channel ${msg.channel.name} in Server ${msg.channel.guild.name}`, 'Discord', msg.channel.guild.id]);
+        channelMeta = sc.Channel.get(msg.channel.id);
     }
 
     const content = message.split(/\s+/g);
@@ -60,6 +60,7 @@ client.on('messageCreate', async (msg) => {
             'channelid': msg.channel.id,
             'messageid': msg.id,
         },
+        'nsfw': msg.channel.nsfw,
         'platform': 'Discord',
         'command': commandstring,
         'channel': msg.channel.name,
@@ -86,7 +87,7 @@ client.on('messageCreate', async (msg) => {
         return;
     }
 
-    if (sc.Modules.cooldown(cmdData, {name: cmdMeta.Name}, {'Mode': 'check'})) {
+    if (await sc.Modules.cooldown(cmdData, {'Mode': 'check'})) {
         return;
     }
 
@@ -104,10 +105,10 @@ client.on('messageCreate', async (msg) => {
         if (cmdRun.data.embedData) {
             return await sendEmbed(cmdData, cmdRun.data);
         } else {
-        return await send(cmdData, cmdRun.data);
+            return await send(cmdData, cmdRun.data);
         }
     } catch (e) {
-        await sc.Utils.misc.dberror(e.name, e.message, e.stack);
+        await sc.Utils.misc.logError(e.name, e.message, e.stack);
         if (e instanceof SyntaxError) {
             sc.Logger.warn(`${chalk.red('[SyntaxError]')} || ${e.name} -> ${e.message} ||| ${e.stack}`);
             return await send(cmdData, 'This command has a Syntax Error.');
@@ -124,20 +125,20 @@ client.on('messageCreate', async (msg) => {
 const send = async (meta, msg) => {
     msg = msg.replace(/\n|\r/g, '');
 
-        // Trim the message to the discord message limit or lower if configured
-        let lengthLimit = meta.channelMeta.Length || sc.Config.parms.discordLenLimit;
-        lengthLimit -= 2;
-        let message = msg.substring(0, lengthLimit);
-        if (message.length < msg.length) {
-            message = msg.substring(0, lengthLimit - 1) + '…';
-        }
+    // Trim the message to the discord message limit or lower if configured
+    let lengthLimit = meta.channelMeta.Length || sc.Config.parms.discordLenLimit;
+    lengthLimit -= 2;
+    let message = msg.substring(0, lengthLimit);
+    if (message.length < msg.length) {
+        message = msg.substring(0, lengthLimit - 1) + '…';
+    }
 
     try {
         await client.createMessage(meta.channelid, message);
     } catch (e) {
         await client.createMessage(meta.channelid, 'Error while processing the reply message');
         sc.Logger.error(`Error while processing reply message: ${e}`);
-        await sc.Utils.misc.dberror('SendError', e.message, e.stack);
+        await sc.Utils.misc.logError('SendError', e.message, e.stack);
     }
 };
 
