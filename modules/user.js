@@ -1,27 +1,53 @@
 module.exports.get = async (data = {}) => {
-    if (!data.Platform || !data.id) {
+    if (!data.Platform || !data.id && data.Platform !== 'Cytube') {
         throw new Error('No Platform or ID provided.');
     }
-    if (data.Platform === 'Twitch') {
+
+    switch (data.Platform) {
+    case 'Twitch': {
         const user = (await sc.Utils.db.query('SELECT * FROM User WHERE Twitch_ID = ?', [data.id]))[0];
+
         if (!user) {
             if (data.createIfNotExists) {
-                await this.create(data);
-                return (await this.get(data));
+                await sc.Modules.user.create(data);
+                return (await sc.Modules.user.get(data));
             } else {
                 return false;
             }
         } else {
+            if (data.name && user.Username !== data.name) {
+                await sc.Utils.db.query('INSERT INTO Name_History (UserID, Previous_Name, New_Name) VALUES (?, ?, ?)', [user.ID, user.Username, data.name]);
+                await sc.Utils.db.query('UPDATE User SET Username = ? WHERE Twitch_ID = ?', [data.name, data.id]);
+            }
+            if (user.Extra) {
+                user.Extra = JSON.parse(user.Extra);
+            }
             return user;
         }
-    } else if (data.Platform === 'Discord') {
+    }
+    case 'Discord': {
         const user = (await sc.Utils.db.query('SELECT * FROM User WHERE Discord_ID = ?', [data.id]))[0];
         if (!user) {
             return false;
         } else {
+            if (user.Extra) {
+                user.Extra = JSON.parse(user.Extra);
+            }
             return user;
         }
-    } else {
+    }
+    case 'Cytube': {
+        const user = (await sc.Utils.db.query('SELECT * FROM User WHERE Cytube_Name = ?', [data.name]))[0];
+        if (!user) {
+            return false;
+        } else {
+            if (user.Extra) {
+                user.Extra = JSON.parse(user.Extra);
+            }
+            return user;
+        }
+    }
+    default:
         return false;
     }
 };
