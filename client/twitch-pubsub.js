@@ -5,6 +5,10 @@ const crypto = require('crypto');
 
 const ps = new RWS('wss://pubsub-edge.twitch.tv', [], {WebSocket: WS, startClosed: true});
 
+if (!Array.isArray(sc.Temp.pubsubTopics)) {
+    sc.Temp.pubsubTopics = [];
+}
+
 module.exports.connect = () => {
     ps.reconnect();
 };
@@ -53,7 +57,7 @@ ps.addEventListener('message', ({data}) => {
         break;
     case 'RECONNECT':
         sc.Logger.warn('Pubsub server sent a reconnect message. restarting the socket');
-        ps.close();
+        ps.reconnect();
         break;
     default:
         sc.Logger.warn(`Unknown PubSub Message Type: ${msg.type}`);
@@ -63,8 +67,9 @@ ps.addEventListener('message', ({data}) => {
 const listenStreamStatus = async (channel) => {
     const channelMeta = sc.Channel.get(channel);
     if (!channelMeta.Name) return null;
+    if (!channelMeta.Extra.listenStreamStatus) return null;
     const nonce = crypto.randomBytes(20).toString('hex').slice(-8);
-    channelMeta.pubsubTopics.push({topic: 'video-playback', nonce: nonce});
+    sc.Temp.pubsubTopics.push({channel: channelMeta.Name, topic: 'video-playback', nonce: nonce});
     const message = {
         'type': 'LISTEN',
         'nonce': nonce,
@@ -81,12 +86,12 @@ const listenChannelPoints = async (channel) => {
     if (!channelMeta.Name) return null;
     if (!channelMeta.Extra.listenChannelPoints) return null;
     const nonce = crypto.randomBytes(20).toString('hex').slice(-8);
-    channelMeta.pubsubTopics.push({topic: 'channel-points', nonce: nonce});
+    sc.Temp.pubsubTopics.push({channel: channelMeta.Name, topic: 'channel-points', nonce: nonce});
     const message = {
         'type': 'LISTEN',
         'nonce': nonce,
         'data': {
-            'topics': [`community-points-channel-v1.${channelMeta.UserID}`],
+            'topics': [`community-points-channel-v1.${channelMeta.Platform_ID}`],
             'auth_token': await sc.Utils.cache.get('oauth-token'),
         },
     };
@@ -131,14 +136,13 @@ const handleWSResp = (msg) => {
         return sc.Logger.warn(`Unknown message without nonce: ${JSON.stringify(msg)}`);
     }
 
-    const channelMeta = sc.Data.channels.find((chn) => chn.pubsubTopics && chn.pubsubTopics.some((i) => i.nonce === msg.nonce));
-    const topicMeta = channelMeta.pubsubTopics.find((i) => i.nonce === msg.nonce);
-    if (!channelMeta.Name || !topicMeta) return null;
+    const {channel, topic} = sc.Temp.pubsubTopics.find((i) => i.nonce === msg.nonce);
+    const {Name} = sc.Channel.get(channel);
 
     if (msg.error) {
-        sc.Logger.warn(`Error occurred while subscribing to topic ${topicMeta.topic} for ${channelMeta.Name}: ${msg.error}`);
+        sc.Logger.warn(`Error occurred while subscribing to topic ${topic} for channel ${Name}: ${msg.error}`);
     } else {
-        sc.Logger.info(`Successfully subscribed to topic ${topicMeta.topic} for ${channelMeta.Name}`);
+        sc.Logger.info(`Successfully subscribed to topic ${chalk.cyan(topic)} for channel ${chalk.magenta(Name)}`);
     }
 };
 
