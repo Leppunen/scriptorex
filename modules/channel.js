@@ -1,5 +1,5 @@
 module.exports.get = (channel) => {
-    const channelData = sc.Data.channels.find((chn) => chn.Name === channel || chn.UserID === channel);
+    const channelData = sc.Data.channels.find((chn) => chn.Name === channel || chn.Platform_ID === channel);
 
     if (!channelData) {
         return {};
@@ -28,7 +28,9 @@ module.exports.getJoinable = (platform) => {
         return sc.Data.channels.filter((channel) => channel.Connect === 1 && channel.Platform === 'Twitch').map((channel) => channel.Name);
     case 'Discord':
         return sc.Data.channels.filter((channel) => channel.Connect === 1 && channel.Platform === 'Discord').map((channel) => channel.Name);
+    case 'Cytube':
+        return sc.Data.channels.filter((channel) => channel.Connect === 1 && channel.Platform === 'Cytube').map((channel) => channel.Platform_ID);
     default:
-        return null;
+        return [];
     }
 };

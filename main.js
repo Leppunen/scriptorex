@@ -17,6 +17,7 @@ sc.Channel = (require('./modules/channel'));
 sc.Twitch = (require('./client/twitch'));
 sc.TwitchPubSub = (require('./client/twitch-pubsub'));
 sc.Discord = (require('./client/discord'));
+sc.Cytube = (require('./client/cytube'));
 
 sc.Temp.cmdCount = 0;
 sc.Temp.cmdFiles = new Map();
@@ -30,6 +31,7 @@ async function start() {
         await sc.Twitch.initialize();
         await sc.TwitchPubSub.connect();
         await sc.Discord.connect();
+        sc.Cytube.initialize();
     } catch (e) {
         sc.Logger.error(`Error encountered during initialization: ${e}`);
     }
