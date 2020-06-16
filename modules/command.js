@@ -136,9 +136,18 @@ module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
         cmdResp = await sc.Modules.banphrase.custom(cmdMeta.channel, cmdResp);
     }
 
+    if (cmdMeta.platform === 'Twitch' && cmdMeta.type === 'privmsg') {
     // Check the message against pajbot banphrase API
-    if (cmdMeta.platform === 'Twitch', cmdMeta.channelMeta.Protect && !commandData.Skip_API_Banphrases) {
+        if (cmdMeta.channelMeta.Protect && !commandData.Skip_API_Banphrases) {
         cmdResp = await sc.Modules.banphrase.pajbot(cmdMeta, cmdResp);
+    }
+
+        // Check the message against pajbot2 for message height
+        if (channelData.Extra.checkHeight) {
+            cmdResp = await sc.Modules.banphrase.checkHeight(channelData, cmdResp);
+        }
+
+        cmdResp = await sc.Modules.banphrase.checkMassping(cmdMeta.channel, cmdResp);
     }
 
     return {state: true, cmd: cmdString, data: cmdResp};
