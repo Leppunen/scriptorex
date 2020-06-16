@@ -2,7 +2,6 @@ const chalk = require('chalk');
 const utils = require('util');
 
 global.sc = {};
-
 sc.Temp = {};
 
 // Load Modules
@@ -29,7 +28,7 @@ async function start() {
         await sc.Modules.config.loadAll();
         await sc.Modules.token.check();
         await sc.Twitch.initialize();
-        await sc.TwitchPubSub.connect();
+        sc.TwitchPubSub.connect();
         await sc.Discord.connect();
         sc.Cytube.initialize();
     } catch (e) {

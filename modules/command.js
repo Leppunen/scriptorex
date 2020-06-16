@@ -6,6 +6,7 @@ module.exports.initialize = () => {
             try {
                 delete require.cache[`${f}`];
                 const cmd = require(`${f}`);
+                if (cmd.help.archived) return;
                 sc.Temp.cmdFiles.set(cmd.help.name, cmd);
                 if (cmd.help.aliases) {
                     cmd.help.aliases.forEach((alias) => {
@@ -75,7 +76,7 @@ module.exports.get = (cmdString) => {
 };
 
 module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
-    const commandData = this.get(cmdString);
+    const commandData = sc.Command.get(cmdString);
     const channelData = sc.Channel.get(cmdMeta.platform === 'Twitch' ? cmdMeta.channel : cmdMeta.channelid);
 
     if (!commandData) {

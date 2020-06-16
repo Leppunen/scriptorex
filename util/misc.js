@@ -72,7 +72,7 @@ module.exports.supiactive = async () => {
 module.exports.getVideoInfo = async (url) => {
     let tags = '';
     let tagData = '';
-    ({data, data: {type, extra, extra: {tags: tagData}}} = await sc.Utils.got.supinic(`/track/fetch/?url=${url}`)).json();
+    ({data, data: {type, extra, extra: {tags: tagData}}} = await sc.Utils.got.supinic(`track/fetch/?url=${url}`)).json();
     if (type === 'bilibili') {
         tagData = tagData.map((item) => item.name);
     }

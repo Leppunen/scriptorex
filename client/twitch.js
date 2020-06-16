@@ -29,10 +29,10 @@ client.on('error', async (error) => {
         client.configuration.password = `oauth:${await sc.Utils.cache.get('oauth-token')}`;
     }
     if (error instanceof Twitch.JoinError) {
-        sc.Logger.warn(`${chalk.red('[JOIN]')} || Error joining channel ${error.failedChannelName}: ${error}`);
+        return sc.Logger.warn(`${chalk.red('[JOIN]')} || Error joining channel ${error.failedChannelName}: ${error}`);
     }
     if (error instanceof Twitch.SayError) {
-        sc.Logger.warn(`${chalk.red('[SAY]')} || Error sending message in ${error.failedChannelName}: ${error.cause} | ${error}`);
+        return sc.Logger.warn(`${chalk.red('[SAY]')} || Error sending message in ${error.failedChannelName}: ${error.cause} | ${error}`);
     }
     sc.Logger.error(`${chalk.red('[ERROR]')} || Error occurred in DTI: ${error}`);
 });
@@ -87,7 +87,7 @@ client.on('WHISPER', (msg) => handleMsg(msg));
 
 const handleMsg = async (msg) => {
     const type = (msg instanceof Twitch.WhisperMessage) ? 'whisper' : 'privmsg';
-    const channelMeta = sc.Data.channels.find((chn) => chn.Name === msg.channelName) || {};
+    const channelMeta = sc.Channel.get(msg.channelName);
 
     const message = msg.messageText.replace(sc.Config.parms.msgregex, '');
     const content = message.split(/\s+/g);
