@@ -1,5 +1,5 @@
 // Cooldown Manager
-module.exports.cooldown = require('./cooldown.js');
+module.exports.cooldown = require('./redisCooldown.js');
 
 // Banphrase Checker
 module.exports.banphrase = require('./banphrase.js');
