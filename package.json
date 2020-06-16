@@ -4,27 +4,29 @@
     "description": "Lidl twitchbot",
     "private": true,
     "scripts": {
-        "start": "yarn node api.js"
+        "start": "yarn node main.js"
     },
     "author": "Leppunen",
     "license": "N/A",
     "dependencies": {
-        "@yarnpkg/pnpify": "^2.0.0-rc.20",
-        "chalk": "^4.0.0",
-        "dank-twitch-irc": "^3.0.7",
-        "eris": "^0.12.0",
-        "got": "^10.7.0",
-        "humanize-duration": "^3.22.0",
-        "ioredis": "^4.16.2",
-        "mariadb": "^2.3.1",
+        "@yarnpkg/pnpify": "^2.0.0-rc.25",
+        "chalk": "^4.1.0",
+        "cytube-connector": "https://github.com/Supinic/cytube-connector",
+        "dank-twitch-irc": "^3.2.6",
+        "eris": "^0.13.2",
+        "got": "^11.3.0",
+        "humanize-duration": "^3.23.1",
+        "ioredis": "^4.17.3",
+        "mariadb": "^2.4.0",
         "modern-rcon": "^1.0.3",
         "reconnecting-websocket": "^4.4.0",
-        "shelljs": "^0.8.3",
+        "shelljs": "^0.8.4",
         "winston": "^3.2.1",
-        "ws": "^7.2.3"
+        "ws": "^7.3.0"
     },
     "devDependencies": {
-        "eslint": "^6.8.0",
+        "babel-eslint": "^10.1.0",
+        "eslint": "^7.2.0",
         "eslint-config-google": "^0.14.0"
     }
 }
