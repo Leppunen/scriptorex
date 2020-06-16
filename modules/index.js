@@ -18,3 +18,6 @@ module.exports.keyword = require('./keyword.js');
 
 // Token
 module.exports.token = require('./token.js');
+
+// Config
+module.exports.config = require('./config.js');

@@ -22,35 +22,10 @@ sc.Temp.cmdCount = 0;
 sc.Temp.cmdFiles = new Map();
 sc.Temp.cmdAliases = new Map();
 
-// Get config from API
-async function initData() {
-    try {
-        sc.Data = await sc.Utils.got.bot('bot/config').json();
-    } catch (e) {
-        sc.Logger.error('Error loading config: ' + e.message);
-        process.exit(0);
-    }
-}
-
-// Reload config from API
-sc.reload = async () => {
-    try {
-        await sc.Command.initialize();
-        await sc.Command.sync();
-        sc.Data = await sc.Utils.got.bot('bot/config').json();
-        return true;
-    } catch (e) {
-        sc.Logger.error(`Reload error: ${e}`);
-        return Promise.reject(e);
-    }
-};
-
 // Initialize Data and Connect Clients
 async function start() {
     try {
-        await initData();
-        await sc.Command.initialize();
-        await sc.Command.sync();
+        await sc.Modules.config.loadAll();
         await sc.Modules.token.check();
         await sc.Twitch.initialize();
         await sc.TwitchPubSub.connect();
