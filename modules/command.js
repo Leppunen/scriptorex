@@ -83,14 +83,10 @@ module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
         return {state: false, cmd: cmdString, data: 'cmd-not-found'};
     }
 
-    //    if (sc.Modules.cooldown(cmdMeta, { name: cmdMeta.Name }, { 'Mode': 'check' })) {
-    //        return { state: false, cmd: cmdString, data: 'cooldown' };
-    //    }
-
     if (cmdMeta.type === 'privmsg' || cmdMeta.platform === 'Discord') {
-        sc.Modules.cooldown(cmdMeta, {name: commandData.Name, UserCooldown: commandData.User_Cooldown, Cooldown: commandData.Cooldown}, {'Level': commandData.Cooldown_Mode || 'UserCommand'});
+        await sc.Modules.cooldown(cmdMeta, {'Level': commandData.Cooldown_Mode || 'UserCommand'});
     } else if (cmdMeta.type === 'whisper') {
-        sc.Modules.cooldown(cmdMeta, {name: commandData.Name, UserCooldown: commandData.User_Cooldown, Cooldown: commandData.Cooldown}, {'Level': 'Whisper'});
+        await sc.Modules.cooldown(cmdMeta, {'Level': 'Whisper'});
     }
 
     const filtered = sc.Modules.filter.check({userid: userMeta.ID || null, channel: cmdMeta.channelMeta, command: commandData, platform: cmdMeta.platform});
@@ -104,7 +100,9 @@ module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
         if (cmdMeta.platform === 'Twitch') {
             cmdResp = `@${cmdMeta.user.name}, ${cmdResp}`;
         } else if (cmdMeta.platform === 'Discord') {
-            cmdResp = `${cmdMeta.user.mentionString}, ${cmdResp}`;
+            if (!cmdResp.embedData) {
+                cmdResp = `${cmdMeta.user.mentionString}, ${cmdResp}`;
+            }
         }
     }
 
@@ -137,10 +135,10 @@ module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
     }
 
     if (cmdMeta.platform === 'Twitch' && cmdMeta.type === 'privmsg') {
-    // Check the message against pajbot banphrase API
+        // Check the message against pajbot banphrase API
         if (cmdMeta.channelMeta.Protect && !commandData.Skip_API_Banphrases) {
-        cmdResp = await sc.Modules.banphrase.pajbot(cmdMeta, cmdResp);
-    }
+            cmdResp = await sc.Modules.banphrase.pajbot(cmdMeta, cmdResp);
+        }
 
         // Check the message against pajbot2 for message height
         if (channelData.Extra.checkHeight) {
