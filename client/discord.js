@@ -68,6 +68,16 @@ client.on('messageCreate', async (msg) => {
         'msgObj': msg,
     };
 
+    // Check if input is a keyword
+    if (await sc.Modules.keyword.check(cmdData)) {
+        const reply = await sc.Modules.keyword.get(cmdData);
+        if (reply.embedData) {
+            return await sendEmbed(cmdData, reply);
+        } else {
+            return await send(cmdData, reply);
+        }
+    }
+
     const userMeta = await sc.Modules.user.get({Platform: cmdData.platform, id: cmdData.user.id, name: cmdData.user.login});
     const cmdMeta = sc.Command.get(commandstring);
 
@@ -90,7 +100,12 @@ client.on('messageCreate', async (msg) => {
         if (!cmdRun.data) {
             return await send(cmdData, 'Command returned no data.');
         }
+
+        if (cmdRun.data.embedData) {
+            return await sendEmbed(cmdData, cmdRun.data);
+        } else {
         return await send(cmdData, cmdRun.data);
+        }
     } catch (e) {
         await sc.Utils.misc.dberror(e.name, e.message, e.stack);
         if (e instanceof SyntaxError) {
@@ -108,7 +123,7 @@ client.on('messageCreate', async (msg) => {
 
 const send = async (meta, msg) => {
     msg = msg.replace(/\n|\r/g, '');
-    try {
+
         // Trim the message to the discord message limit or lower if configured
         let lengthLimit = meta.channelMeta.Length || sc.Config.parms.discordLenLimit;
         lengthLimit -= 2;
@@ -117,11 +132,24 @@ const send = async (meta, msg) => {
             message = msg.substring(0, lengthLimit - 1) + '…';
         }
 
+    try {
         await client.createMessage(meta.channelid, message);
     } catch (e) {
         await client.createMessage(meta.channelid, 'Error while processing the reply message');
         sc.Logger.error(`Error while processing reply message: ${e}`);
         await sc.Utils.misc.dberror('SendError', e.message, e.stack);
+    }
+};
+
+const sendEmbed = async (meta, msg) => {
+    try {
+        await client.createMessage(meta.channelid, {
+            embed: msg.embedData,
+        });
+    } catch (e) {
+        await client.createMessage(meta.channelid, 'Error while processing the reply message');
+        sc.Logger.error(`Error while processing reply message: ${e}`);
+        await sc.Utils.misc.logError('SendError', e.message, e.stack);
     }
 };
 
