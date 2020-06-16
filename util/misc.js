@@ -93,12 +93,12 @@ module.exports.randomArray = (array) => {
     return array[Math.floor(Math.random() * array.length)];
 };
 
-module.exports.dblog = async (type, channel, username, userid, data, extra, response) => {
-    const insert = [type, channel, username, userid, data, extra, response];
-    await sc.Utils.db.query('INSERT INTO Bot_Log (type, channel, username, userid, data, extra, response) VALUES (?, ?, ?, ?, ?, ?, ?)', insert);
+module.exports.log = async (type, platform, channel, username, data, extra, response) => {
+    const insert = [type, platform, channel, username, data, extra, response];
+    await sc.Utils.db.query('INSERT INTO BotLogs (Type, Platform, Channel, User, Data, Extra, Response) VALUES (?, ?, ?, ?, ?, ?, ?)', insert);
 };
 
-module.exports.dberror = async (type, data, extra) => {
+module.exports.logError = async (type, data, extra) => {
     const insert = [type, data, extra];
-    await sc.Utils.db.query('INSERT INTO Bot_Error (type, data, extra) VALUES (?, ?, ?)', insert);
+    await sc.Utils.db.query('INSERT INTO BotErrors (Type, Data, Extra) VALUES (?, ?, ?)', insert);
 };

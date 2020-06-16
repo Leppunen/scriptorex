@@ -40,11 +40,11 @@ start();
 // Exception Handlers
 process
     .on('unhandledRejection', async (reason, promise) => {
-        await sc.Utils.misc.dberror('PromiseRejection', utils.inspect(promise), utils.inspect(reason));
+        await sc.Utils.misc.logError('PromiseRejection', utils.inspect(promise), utils.inspect(reason));
         return sc.Logger.error(`${chalk.red('[UnhandledRejection]')} || ${utils.inspect(promise)} -> ${reason}`);
     })
     .on('uncaughtException', async (err) => {
-        await sc.Utils.misc.dberror('UncaughtException', err.message, err.stack);
+        await sc.Utils.misc.logError('UncaughtException', err.message, err.stack);
         await sc.Utils.misc.push('Uncaught Exception detected!', `${err.stack}`);
         sc.Logger.error(`${chalk.red('[UncaughtException]')} || ${err.message}`);
         return process.exit(0);

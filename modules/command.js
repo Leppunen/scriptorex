@@ -107,7 +107,23 @@ module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
         }
     }
 
-    await sc.Utils.misc.dblog('Command', cmdMeta.type === 'whisper' ? 'Whisper' : cmdMeta.channel, cmdMeta.user.name, cmdMeta.user.id, cmdMeta.command, cmdMeta.message.args.join(' ') || null, cmdResp ? cmdResp.substring(0, 300) : null);
+    if (commandData.Log) {
+        await sc.Utils.misc.log(
+            'Command',
+            cmdMeta.platform,
+            channelData.ID ? channelData.ID : null,
+            userMeta ? userMeta.ID : null,
+            `${commandData.Name} ${cmdMeta.message.args.join(' ')}`.trim(),
+            JSON.stringify({
+                User: cmdMeta.user.name,
+                Login: cmdMeta.user.login,
+                Channel: cmdMeta?.channel,
+                Description: channelData.Description,
+            },
+            null, 2),
+            cmdResp || null,
+        );
+    }
 
     // Check if the message has links and remove them if links are not allowed in the channel.
     if (sc.Config.parms.linkRegex.test(cmdResp) && channelData.Extra.Links === false) {

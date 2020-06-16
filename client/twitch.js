@@ -73,9 +73,11 @@ client.on('NOTICE', async ({channelName, messageID, messageText}) => {
         break;
     }
 
-    default:
-        await sc.Utils.misc.dblog('Notice', channelName, null, null, messageID, messageText, null);
+    default: {
+        const channelMeta = sc.Channel.get(channelName);
+        await sc.Utils.misc.log('Notice', 'Twitch', channelMeta.ID, null, messageID, messageText, null);
         sc.Logger.info(`${chalk.green('[NOTICE]')} || Incoming notice: ${messageID} in channel ${channelName} -> ${messageText}`);
+    }
     }
 });
 
@@ -205,7 +207,7 @@ const handleMsg = async (msg) => {
             }
             return await send(cmdData, cmdRun.data);
         } catch (e) {
-            await sc.Utils.misc.dberror(e.name, e.message, e.stack);
+            await sc.Utils.misc.logError(e.name, e.message, e.stack);
             if (e instanceof SyntaxError) {
                 sc.Logger.warn(`${chalk.red('[SyntaxError]')} || ${e.name} -> ${e.message} ||| ${e.stack}`);
                 return await send(cmdData, 'This command has a Syntax Error.');
@@ -243,7 +245,7 @@ const send = async (meta, msg) => {
         }
         await send(meta, 'Error while processing the reply message monkaS');
         sc.Logger.error(`Error while processing reply message: ${e}`);
-        await sc.Utils.misc.dberror('SendError', e.message, e.stack);
+        await sc.Utils.misc.logError('SendError', e.message, e.stack);
     }
 };
 

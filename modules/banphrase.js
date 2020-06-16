@@ -5,7 +5,7 @@ module.exports.pajbot = async (meta, msg) => {
             const {body: {banned, banphrase_data}} = await sc.Utils.got.ban(`https://${meta.channelMeta.Banphrase_URL}/api/v1/banphrases/test`, {json: {'message': msg}});
             if (banned) {
                 sc.Logger.warn(`${chalk.red('[BANPHRASE]')} || Banphrase triggered in ${chalk.green(meta.channel)} -> ${chalk.magenta(banphrase_data.phrase)}`);
-                await sc.Utils.misc.dblog('Banphrase', meta.channel, meta.user.name, meta.user.id, msg, null, banphrase_data);
+                await sc.Utils.misc.log('Banphrase', meta.platform, meta.channelMeta.ID, meta.userMeta.ID, msg, null, banphrase_data);
                 return 'No can do, Response contains a banned phrase.';
             } else {
                 return msg;
