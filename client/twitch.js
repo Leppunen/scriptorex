@@ -9,8 +9,6 @@ const client = new Twitch.ChatClient({
 client.use(new Twitch.AlternateMessageModifier(client));
 client.use(new Twitch.SlowModeRateLimiter(client, 10));
 
-client.timeouts = new Set();
-
 client.initialize = async () => {
     client.configuration.password = `oauth:${await sc.Utils.cache.get('oauth-token')}`;
     const channels = sc.Channel.getJoinable('Twitch');
@@ -20,7 +18,12 @@ client.initialize = async () => {
 
 client.on('ready', async () => {
     sc.Logger.info(`${chalk.green('[CONNECTED]')} || Connected to Twitch.`);
-    await client.say(sc.Config.twitch.username, 'Running!');
+    const rebootChannel = await sc.Utils.cache.get('lastRebootChannel');
+    if (rebootChannel) {
+        await client.say(rebootChannel, 'Running!');
+    } else {
+        await client.say(sc.Config.twitch.username, 'Running!');
+    }
 });
 
 client.on('error', async (error) => {
@@ -40,12 +43,9 @@ client.on('error', async (error) => {
 client.on('CLEARCHAT', async (msg) => {
     if (msg.isTimeout() && msg.targetUsername === sc.Config.twitch.username) {
         sc.Logger.warn(`${chalk.green('[Timeout]')} || Got timed out in ${msg.channelName} for ${msg.banDuration} seconds`);
-        await sc.Utils.misc.dblog('Timeout', msg.channelName, msg.targetUsername, null, `Duration: ${msg.banDuration} seconds`, null, null);
-        client.timeouts.add(msg.channelName);
-        setTimeout(() => {
-            client.timeouts.delete(msg.channelName);
-        }, msg.banDuration * 1000 + 250);
+        sc.Utils.cache.set(`channelTimeout-${msg.channelName}`, true, msg.banDuration + 2);
     }
+
     if (msg.wasChatCleared()) {
         sc.Logger.info(`${chalk.green('[CLEARCHAT]')} || Chat was cleared in ${msg.channelName}`);
     }
@@ -109,13 +109,13 @@ const handleMsg = async (msg) => {
             'args': args,
         },
         'type': type,
+        'nsfw': channelMeta?.Extra?.NSFW,
         'platform': 'Twitch',
         'command': commandstring,
         'channel': msg.channelName,
         'channelid': msg.channelID,
         'channelMeta': channelMeta,
         'userstate': msg.ircTags,
-        'msgObj': msg,
     };
 
     // Update bot status
@@ -141,7 +141,7 @@ const handleMsg = async (msg) => {
     }
 
     // If the bot is timed out, do not process anything
-    if (client.timeouts.has(msg.channelName)) {
+    if (await sc.Utils.cache.get(`channelTimeouts-${msg.channelName}`)) {
         return;
     }
 
@@ -156,8 +156,8 @@ const handleMsg = async (msg) => {
     }
 
     // Check if input is a keyword
-    if (await sc.Modules.keyword.get(cmdData)) {
-        const reply = await sc.Modules.keyword.get(cmdData, {setCooldown: true});
+    if (sc.Modules.keyword.check(cmdData)) {
+        const reply = await sc.Modules.keyword.get(cmdData);
         return await send(cmdData, reply);
     }
 
@@ -168,27 +168,29 @@ const handleMsg = async (msg) => {
         // No command found. Do nothing.
         if (!cmdMeta) {
             return;
+        } else {
+            cmdData.cmdMeta = cmdMeta;
         }
 
         // Check if cooldown is active.
-        if (sc.Modules.cooldown(cmdData, {name: cmdMeta.Name}, {'Mode': 'check'})) {
+        if (await sc.Modules.cooldown(cmdData, {'Mode': 'check'})) {
             return;
         }
 
         if (type === 'whisper' && !cmdMeta.Whisperable) {
-            sc.Modules.cooldown(cmdData, {name: cmdMeta.name, UserCooldown: cmdMeta.User_Cooldown, Cooldown: cmdMeta.Cooldown}, {'Level': 'Whisper'});
+            await sc.Modules.cooldown(cmdData, {'Level': 'Whisper'});
             return await pm(cmdData, cmd.help, 'This command is not whisperable');
         }
 
         try {
             const userMeta = await sc.Modules.user.get({Platform: cmdData.platform, id: cmdData.user.id, name: cmdData.user.login, createIfNotExists: true});
+            cmdData.userMeta = userMeta;
             const cmdRun = await sc.Command.execute(commandstring, cmdData, userMeta);
+
             if (cmdRun.state === false) {
-                if (cmdRun.data === 'cooldown') {
-                    return;
-                }
-                return await send(cmdData, `Command Error: ${cmdRun.data}`);
+                return await send(cmdData, `Command ${cmdRun.cmd} failed: ${cmdRun.data}`);
             }
+
             sc.Temp.cmdCount++;
 
             if (!cmdMeta.Reply) {
@@ -243,7 +245,7 @@ const send = async (meta, msg) => {
         if (e instanceof Twitch.SayError && e.message.includes('@msg-id=msg_duplicate')) {
             return await send(meta, 'That message was a duplicate monkaS');
         }
-        await send(meta, 'Error while processing the reply message monkaS');
+        await client.say(meta.channel, 'Error while processing the reply message monkaS');
         sc.Logger.error(`Error while processing reply message: ${e}`);
         await sc.Utils.misc.logError('SendError', e.message, e.stack);
     }
