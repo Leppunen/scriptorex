@@ -36,12 +36,12 @@ module.exports.stream = async (username) => {
 
 
 module.exports.chatters = async (channel) => {
-    const body = await sc.Utils.cache.getBase64(`chatters-${channel}`);
+    const body = await sc.Utils.cache.get(`chatters-${channel}`);
     if (body) {
         return Object.keys(body['chatters']).flatMap((e) => body['chatters'][e]);
     } else {
-        const body = await sc.Utils.got.tmi(`/group/user/${channel.toLowerCase()}/chatters`).json();
-        await sc.Utils.cache.setBase64(`chatters-${channel}`, body);
+        const body = await sc.Utils.got.tmi(`group/user/${channel.toLowerCase()}/chatters`).json();
+        await sc.Utils.cache.set(`chatters-${channel}`, body);
         return Object.keys(body['chatters']).flatMap((e) => body['chatters'][e]);
     }
 };
