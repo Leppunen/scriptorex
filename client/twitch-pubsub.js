@@ -120,7 +120,7 @@ const handleWSMsg = async (msg = {}) => {
             await sc.Utils.cache.redis.del(`streamLive-${channelMeta.Name}`);
             sc.Logger.debug(`Channel ${channelMeta.Name} went offline`);
             channelMeta.streamLive = false;
-            if (channelMeta.Name === 'supinic') {
+            if (channelMeta.Name === 'supinic' || channelMeta.Name === 'pajlada') {
                 await sc.Twitch.say(channelMeta.Name, 'peepoSadDank 👉 Channel is offline!');
             }
             break;
