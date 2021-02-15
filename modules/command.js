@@ -28,9 +28,10 @@ module.exports.initialize = () => {
     });
 };
 
-module.exports.sync = async function commandSync() {
+module.exports.sync = async () => {
     const crypto = require('crypto');
     const cmdFiles = Array.from(sc.Temp.cmdFiles.values()).filter((cmd) => !cmd.help.archived);
+    const changedCmd = [];
     for (const cmd of cmdFiles) {
         const dbCmd = (await sc.Utils.db.query('SELECT ID, Name, Checksum, Code FROM Commands WHERE Name = ?', [cmd.help.name]))[0];
         if (!dbCmd) {
@@ -54,11 +55,13 @@ module.exports.sync = async function commandSync() {
         } else {
             const checkSum = crypto.createHash('sha256').update(String(cmd.run), 'utf8').digest('hex');
             if (checkSum !== dbCmd.Checksum) {
-                sc.Logger.debug(`Local version of command ${cmd.help.name} differs from the database version. Updating database version.`);
+                changedCmd.push(cmd.help.name);
+                sc.Logger.info(`Local version of command ${cmd.help.name} differs from the database version. Updating database version.`);
                 await sc.Utils.db.query('UPDATE Commands SET Code = ?, Checksum = ? WHERE Name = ?', [String(cmd.run), checkSum, cmd.help.name]);
             }
         }
     }
+    return changedCmd;
 };
 
 module.exports.get = (cmdString) => {
