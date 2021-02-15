@@ -30,3 +30,7 @@ module.exports.getJoinable = (platform) => {
         return [];
     }
 };
+
+module.exports.reload = async () => {
+    sc.Data.channels = await sc.Utils.db.query('SELECT * from Channel');
+};
