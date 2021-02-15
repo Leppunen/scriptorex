@@ -115,6 +115,22 @@ module.exports.fixHTML = (string) => {
     });
 };
 
+module.exports.getPlatformLatency = async (platform) => {
+    switch (platform) {
+    case 'Twitch': {
+        const {performance} = require('perf_hooks');
+        const t0 = performance.now();
+        await sc.Twitch.ping();
+        const t1 = performance.now();
+        return (t1 - t0).toFixed();
+    }
+    case 'Discord':
+        return sc.Discord.shards.get(0).latency;
+    default:
+        return null;
+    }
+};
+
 module.exports.log = async (type, platform, channel, username, data, extra, response) => {
     const insert = [type, platform, channel, username, data, extra, response];
     await sc.Utils.db.query('INSERT INTO BotLogs (Type, Platform, Channel, User, Data, Extra, Response) VALUES (?, ?, ?, ?, ?, ?, ?)', insert);
