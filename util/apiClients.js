@@ -9,7 +9,7 @@ module.exports.ban = got.extend({
 
 // Generic GET requests
 module.exports.generic = got.extend({
-    timeout: 1500,
+    timeout: 2500,
 });
 
 // DNSApi
@@ -71,6 +71,7 @@ module.exports.tmi = got.extend({
 // Scriptorex API
 module.exports.bot = got.extend({
     timeout: 5000,
+    retry: 0,
     responseType: 'json',
     prefixUrl: 'https://api.ivr.fi/',
     headers: {
@@ -225,5 +226,35 @@ module.exports.reddit = got.extend({
     throwHttpErrors: false,
     headers: {
         'Cookie': '_options={%22pref_quarantine_optin%22:true};',
+    },
+});
+
+// pnsl API
+module.exports.pnsl = got.extend({
+    prefixUrl: 'https://bot.tetyys.com/api/v1',
+    throwHttpErrors: false,
+    headers: {
+        'Authorization': `Bearer ${sc.Config.tokens.pnsl}`,
+    },
+});
+
+// StreamElements API
+module.exports.streamelements = got.extend({
+    method: 'get',
+    timeout: 3000,
+    responseType: 'json',
+    prefixUrl: 'https://api.streamelements.com/kappa/v2',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+module.exports.recentmessages = got.extend({
+    prefixUrl: 'https://recent-messages.robotty.de/api/v2',
+    timeout: 2500,
+    method: 'post',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sc.Config.tokens.recentmessages}`,
     },
 });
