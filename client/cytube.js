@@ -158,6 +158,7 @@ const handleMessage = async ({client, channel, data}) => {
         return send(context, reply);
     }
 
+    if (data.msg.startsWith(sc.Config.parms.prefix)) {
     const cmdMeta = sc.Command.get(commandstring);
 
     // No command found. Do nothing.
@@ -193,6 +194,7 @@ const handleMessage = async ({client, channel, data}) => {
         }
         send(context, 'Error occurred while executing the command.');
         return sc.Logger.error(`Error executing command: (${e.name}) -> ${e.message} ||| ${e.stack}`);
+    }
     }
 };
 
