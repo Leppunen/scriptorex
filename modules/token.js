@@ -16,7 +16,7 @@ module.exports.check = async () => {
             throw new Error(`Error Fetching token: ${error}`);
         }
     }
-    sc.Twitch.configuration.password = token;
+    sc.Twitch.configuration.password = `oauth:${await sc.Utils.cache.get('oauth-token')}`;
 };
 
 
@@ -24,6 +24,7 @@ const fetchToken = async () => {
     const refreshToken = await sc.Utils.cache.get('refresh-token');
     if (!refreshToken) {
         sc.Logger.warn('No refresh token present. Cannot create a token.');
+        throw new Error('No refresh token stored in redis');
     }
     const {access_token, expires_in, refresh_token} = await sc.Utils.got.twitchAuth.post('oauth2/token', {
         searchParams: {
