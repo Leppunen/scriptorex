@@ -37,7 +37,7 @@ module.exports.sync = async () => {
         if (!dbCmd) {
             sc.Logger.warn(`No database match found for command ${cmd.help.name}. Creating new command`);
             if (cmd.help.channel || cmd.help.users || cmd.help.level) {
-                sc.Logger.debug(`Command ${cmd.help.name} has limits configured. Setting command to Whitelisted.`);
+                sc.Logger.info(`Command ${cmd.help.name} has limits configured. Setting command to Whitelisted.`);
                 if (cmd.help.aliases) {
                     await sc.Utils.db.query('INSERT INTO Commands (Name, Aliases, Description, Code, Whitelisted) VALUES (?, ?, ?, ?, ?)', [cmd.help.name, JSON.stringify(cmd.help.aliases), cmd.help.description, String(cmd.run), 1]);
                 } else {
@@ -96,12 +96,13 @@ module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
         await sc.Modules.cooldown(cmdMeta, {'Level': 'Whisper'});
     }
 
-    const filtered = sc.Modules.filter.check({userid: userMeta.ID || null, channel: cmdMeta.channelMeta, command: commandData, platform: cmdMeta.platform});
+    const filtered = sc.Modules.filter.check({userMeta, userid: userMeta.ID || null, channel: cmdMeta.channelMeta, command: commandData, platform: cmdMeta.platform});
     if (filtered) {
         return {state: false, cmd: cmdString, data: filtered};
     }
 
     let cmdResp = await eval(commandData.Code)(cmdMeta);
+    const rawResp = cmdResp;
 
     if (commandData.Ping) {
         if (cmdMeta.platform === 'Twitch') {
@@ -155,5 +156,5 @@ module.exports.execute = async (cmdString, cmdMeta, userMeta) => {
         cmdResp = await sc.Modules.banphrase.checkMassping(cmdMeta.channel, cmdResp);
     }
 
-    return {state: true, cmd: cmdString, data: cmdResp};
+    return {state: true, cmd: cmdString, data: cmdResp, rawReply: rawResp};
 };
