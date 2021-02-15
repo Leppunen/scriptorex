@@ -107,7 +107,7 @@ const joinChannel = (channel) => {
 
 const handleMessage = async ({client, channel, data}) => {
     const difference = (Date.now() - data.time);
-    if (data.time && difference > 60.0e3) {
+    if (data.time && difference > 5.0e3) {
         return;
     }
 
@@ -136,6 +136,7 @@ const handleMessage = async ({client, channel, data}) => {
         message: {
             raw: data.msg,
             text: message,
+            content: content,
             args: args,
             sendTime: data.time,
         },
@@ -153,9 +154,10 @@ const handleMessage = async ({client, channel, data}) => {
 
     context.user.meta = await sc.Modules.user.get({Platform: context.platform, name: context.user.login});
 
-    if (await sc.Modules.keyword.check(context)) {
-        const reply = await sc.Modules.keyword.get(context);
-        return send(context, reply);
+
+    if (channelMeta.Ignore === 1 && context.user.meta?.Extra?.BypassIgnores !== true) {
+        return;
+    }
     }
 
     if (data.msg.startsWith(sc.Config.parms.prefix)) {
@@ -199,8 +201,10 @@ const handleMessage = async ({client, channel, data}) => {
 };
 
 const send = (context, msg) => {
-    let lengthLimit = 200;
-    lengthLimit -= 2;
+    if (!msg) {
+        return;
+    }
+    const lengthLimit = 200;
     let message = msg.substring(0, lengthLimit);
     if (message.length < msg.length) {
         message = msg.substring(0, lengthLimit - 1) + '…';
