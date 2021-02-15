@@ -32,6 +32,9 @@ client.on('error', async (error) => {
         client.configuration.password = `oauth:${await sc.Utils.cache.get('oauth-token')}`;
     }
     if (error instanceof Twitch.JoinError) {
+        if (error.message.includes('@msg-id=msg_channel_suspended')) {
+            return sc.Logger.warn(`Error joining channel ${error.failedChannelName}: Channel has been suspended.`);
+        }
         const userData = await sc.Utils.twitch.resolveid(sc.Channel.get(error.failedChannelName).Platform_ID);
         if (userData.login !== error.failedChannelName) {
             sc.Logger.warn(`${chalk.yellow('[JOIN]')} || User ${error.failedChannelName} has namechanged to ${userData.login}. Updating record and rejoining`);
