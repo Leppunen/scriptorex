@@ -3,7 +3,7 @@ const chalk = require('chalk');
 const client = new Discord.Client(sc.Config.discord.token);
 
 client.on('ready', () => {
-    sc.Logger.info(`${chalk.green('[CONNECTED]')} || Connected to Discord.`);
+    sc.Logger.info(`${chalk.green('[DISCORD]')} || Connected to Discord.`);
 });
 
 client.on('warn', (msg, id) => {
@@ -52,6 +52,7 @@ client.on('messageCreate', async (msg) => {
         },
         'message': {
             'text': message,
+            'content': content,
             'args': args,
         },
         'discord': {
@@ -116,7 +117,7 @@ client.on('messageCreate', async (msg) => {
         }
 
         if (cmdRun.data.embedData) {
-            return await sendEmbed(cmdData, cmdRun.data);
+            return await sendEmbed(cmdData, cmdRun.data.embedData);
         } else {
             return await send(cmdData, cmdRun.data);
         }
@@ -158,7 +159,7 @@ const send = async (meta, msg) => {
 const sendEmbed = async (meta, msg) => {
     try {
         await client.createMessage(meta.channelid, {
-            embed: msg.embedData,
+            embed: msg,
         });
     } catch (e) {
         await client.createMessage(meta.channelid, 'Error while processing the reply message');
