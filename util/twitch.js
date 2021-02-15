@@ -2,7 +2,7 @@ module.exports.resolver = async (target) => {
     try {
         return await sc.Utils.got.bot(`twitch/resolve/${target}`).json();
     } catch (err) {
-        if (err.response.statusCode === 404) return false;
+        if (err?.response?.statusCode === 404) return false;
         throw new Error(err);
     }
 };
@@ -11,7 +11,7 @@ module.exports.resolveid = async (target) => {
     try {
         return await sc.Utils.got.bot(`twitch/resolve/${target}?id=1`).json();
     } catch (err) {
-        if (err.response.statusCode === 404) return false;
+        if (err?.response?.statusCode === 404) return false;
         throw new Error(err);
     }
 };
@@ -20,7 +20,7 @@ module.exports.bot = async (username) => {
     try {
         return await sc.Utils.got.bot(`twitch/bot/${username}`).json();
     } catch (err) {
-        if (err.response.statusCode === 404) return false;
+        if (err?.response?.statusCode === 404) return false;
         throw new Error(err);
     }
 };
@@ -29,7 +29,7 @@ module.exports.stream = async (username) => {
     try {
         return await sc.Utils.got.bot(`twitch/stream/${username}`).json();
     } catch (err) {
-        if (err.response.statusCode === 404) return false;
+        if (err?.response?.statusCode === 404) return false;
         throw new Error(err);
     }
 };
