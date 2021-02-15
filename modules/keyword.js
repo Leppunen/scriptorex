@@ -79,21 +79,21 @@ module.exports.get = async (meta, id) => {
     }
 
     if (!kwData.Extra.NoLog) {
-    await sc.Utils.misc.log(
-        'Keyword',
-        meta.platform,
-        meta.channelMeta.ID,
-        user.ID || null,
-        `${kwData.Name} ${meta.message.args.join(' ')}`,
-        JSON.stringify({
-            User: meta.user.name,
-            Login: meta.user.login,
-            Channel: meta.channel,
-            Description: meta.channelMeta.Description,
-        },
-        null, 2),
+        await sc.Utils.misc.log(
+            'Keyword',
+            meta.platform,
+            meta.channelMeta.ID,
+            user.ID || null,
+            `${kwData.Name} ${meta.message.args.join(' ')}`,
+            JSON.stringify({
+                User: meta.user.name,
+                Login: meta.user.login,
+                Channel: meta.channel,
+                Description: meta.channelMeta.Description,
+            },
+            null, 2),
             kwResp ?? '[No Data]',
-    );
+        );
     }
 
     return {response: kwResp, extra: kwData.Extra};
