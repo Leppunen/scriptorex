@@ -1,6 +1,8 @@
 const chalk = require('chalk');
 const utils = require('util');
 
+const {Rcon} = require('rcon-client');
+
 global.sc = {};
 sc.Temp = {};
 
@@ -18,6 +20,8 @@ sc.TwitchPubSub = (require('./client/twitch-pubsub'));
 sc.Discord = (require('./client/discord'));
 sc.Cytube = (require('./client/cytube'));
 
+sc.Rcon = new Rcon({host: sc.Config.rcon.host, port: 25575, password: sc.Config.rcon.password});
+
 sc.Temp.cmdCount = 0;
 sc.Temp.cmdFiles = new Map();
 sc.Temp.cmdAliases = new Map();
@@ -31,6 +35,7 @@ async function start() {
         sc.TwitchPubSub.connect();
         await sc.Discord.connect();
         sc.Cytube.initialize();
+        // await sc.Rcon.connect();
     } catch (e) {
         sc.Logger.error(`Error encountered during initialization: ${e}`);
     }
