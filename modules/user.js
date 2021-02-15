@@ -58,7 +58,7 @@ module.exports.create = async (data = {}) => {
     }
     try {
         const {insertId} = await sc.Utils.db.query('INSERT INTO User (Username, Twitch_ID) VALUES (?, ?)', [data.name, data.id]);
-        sc.Logger.debug(`[User-Create] -> User ${data.name}/${data.id} created with ID ${insertId}`);
+        sc.Logger.info(`[User-Create] -> User ${data.name}/${data.id} created with ID ${insertId}`);
         return true;
     } catch (e) {
         if (e.errno === 1062) {
