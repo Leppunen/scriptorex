@@ -68,6 +68,10 @@ module.exports.paste = async (pastedata) => {
     return `https://paste.ivr.fi/${key}`;
 };
 
+module.exports.sleep = (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 module.exports.push = async (title, message) => {
     const {status} = await sc.Utils.got.push({json: {message: message, title: title}}).json();
     if (status === 1) {
