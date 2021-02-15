@@ -3,9 +3,9 @@ const chalk = require('chalk');
 module.exports.pajbot = async (meta, msg) => {
     if (meta.channelMeta.Banphrase_URL) {
         try {
-            const {body: {banned, banphrase_data}} = await sc.Utils.got.ban(`https://${meta.channelMeta.Banphrase_URL}/api/v1/banphrases/test`, {json: {'message': msg}});
+            const {banned, banphrase_data} = await sc.Utils.got.ban(`https://${meta.channelMeta.Banphrase_URL}/api/v1/banphrases/test`, {json: {'message': msg}}).json();
             if (banned) {
-                sc.Logger.warn(`${chalk.red('[BANPHRASE]')} || Banphrase triggered in ${chalk.green(meta.channel)} -> ${chalk.magenta(banphrase_data.phrase)}`);
+                sc.Logger.warn(`${chalk.red('[BANPHRASE]')} || Banphrase triggered in ${chalk.green(meta.channel)} -> ID: ${banphrase_data.id} [${chalk.magenta(banphrase_data.phrase)}]`);
                 await sc.Utils.misc.log('Banphrase', meta.platform, meta.channelMeta.ID, meta.userMeta.ID, msg, null, banphrase_data);
                 return 'No can do, Response contains a banned phrase.';
             } else {
@@ -39,7 +39,7 @@ module.exports.checkMassping = async (channel, msg) => {
     try {
         const chatterList = await sc.Utils.twitch.chatters(channel);
         const pingCount = msg.split(' ').reduce((a, b) => a + chatterList.includes(b.toLowerCase()), 0);
-        if (pingCount > 5) {
+        if (pingCount > sc.Config.twitch.maxPingCount) {
             return 'The reply pings too many users in chat.';
         } else {
             return msg;
@@ -63,9 +63,9 @@ module.exports.custom = async (channel, msg) => {
                 } else {
                     try {
                         if (banphrase.MatchCase === 1) {
-                            msg = msg.replace(new RegExp(banphrase.Data, 'gu'), banphrase.Reply || '[B]');
+                            msg = msg.replace(new RegExp(banphrase.Data, 'gu'), banphrase.Reply !== null ? banphrase.Reply : '[B]');
                         } else {
-                            msg = msg.replace(new RegExp(banphrase.Data, 'giu'), banphrase.Reply || '[B]');
+                            msg = msg.replace(new RegExp(banphrase.Data, 'giu'), banphrase.Reply !== null ? banphrase.Reply : '[B]');
                         }
                     } catch (e) {
                         sc.Logger.error(`Banphrase ${banphrase.ID} Failed -> ${e}`);
