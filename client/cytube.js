@@ -3,35 +3,80 @@ const chalk = require('chalk');
 
 const clients = {};
 
+const reconnectDelay = 20e3;
+
 module.exports.clients = clients;
 
 module.exports.initialize = () => {
     const channels = sc.Channel.getJoinable('Cytube');
 
     if (channels.length === 0) {
-        return sc.Logger.error('No Cytube channels configured');
+        return sc.Logger.warn('No Cytube channels configured');
     }
 
     for (const channel of channels) {
+        joinChannel(channel);
+    }
+};
+
+module.exports.rejoinChannel = async (channel) => {
+    clients[channel].connecting = true;
+    clients[channel].destroy();
+    await sc.Utils.misc.sleep(5000);
+    clients[channel].connecting = false;
+    joinChannel(channel);
+};
+
+const joinChannel = (channel) => {
+    if (clients[channel]) {
+        if (clients[channel].connecting === true) {
+            return sc.Logger.warn(`Cytube client ${channel} is still connecting!`);
+        }
+        clients[channel].connecting = true;
+        sc.Logger.warn(`Client for Cytube channel ${channel} is already created. Disconnecting and creating a new one.`);
+    }
+    const {Extra: {Password}} = sc.Channel.get(`Cytube-${channel}`);
         clients[channel] = new Cytube({
             host: 'cytu.be',
             port: 443,
             secure: true,
             user: sc.Config.cytube.username,
             auth: sc.Config.cytube.password,
+        pass: Password ?? null,
             chan: channel,
         });
 
         const client = clients[channel];
 
+    client.connecting = true;
+    client.restartInterval = null;
+
         client.userMap = new Map();
 
         client.on('clientready', () => {
-            sc.Logger.info(`${chalk.green('[CONNECTED]')} || Connected to Cytube channel ${chalk.magenta(channel)}.`);
+        client.connecting = false;
+        clearInterval(client.restartInterval);
+        sc.Logger.info(`${chalk.green('[CYTUBE]')} || Connected to Cytube channel ${chalk.magenta(channel)}.`);
         });
 
         client.on('error', (e) => {
-            sc.Logger.error(`Error occurred in Cytube channel ${channel} -> ${e}`);
+        sc.Logger.error(`Error occurred in Cytube client for channel ${channel} -> ${e}`);
+        if (client.connecting) {
+            return;
+        }
+        sc.Logger.warn(`Reconnecting to ${channel}`);
+        client.destroy();
+        client.restartInterval = setTimeout(() => joinChannel(channel), reconnectDelay);
+    });
+
+    client.on('disconnect', (e) => {
+        sc.Logger.error(`Disconnected from Cytube channel ${channel} -> ${e}`);
+        if (client.connecting) {
+            return;
+        }
+        sc.Logger.warn(`Reconnecting to ${channel}`);
+        client.destroy();
+        client.restartInterval = setTimeout(() => joinChannel(channel), reconnectDelay);
         });
 
         client.on('userlist', (data = []) => {
@@ -58,7 +103,6 @@ module.exports.initialize = () => {
         client.on('chatMsg', async (data) => {
             await handleMessage({client: client, channel: channel, data: data});
         });
-    }
 };
 
 const handleMessage = async ({client, channel, data}) => {
