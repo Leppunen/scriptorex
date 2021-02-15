@@ -158,6 +158,22 @@ const handleMessage = async ({client, channel, data}) => {
     if (channelMeta.Ignore === 1 && context.user.meta?.Extra?.BypassIgnores !== true) {
         return;
     }
+
+    if (sc.Modules.keyword.check(context)) {
+        const kwID = sc.Modules.keyword.check(context);
+        const kwData = await sc.Modules.keyword.get(context, kwID);
+
+        if (kwData === null) {
+            return;
+        }
+
+        const {response, extra} = kwData;
+
+        if (extra.Reply === false) {
+            return;
+        }
+
+        return send(context, response);
     }
 
     if (data.msg.startsWith(sc.Config.parms.prefix)) {

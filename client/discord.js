@@ -70,12 +70,24 @@ client.on('messageCreate', async (msg) => {
     };
 
     // Check if input is a keyword
-    if (await sc.Modules.keyword.check(cmdData)) {
-        const reply = await sc.Modules.keyword.get(cmdData);
-        if (reply.embedData) {
-            return await sendEmbed(cmdData, reply);
+    if (sc.Modules.keyword.check(cmdData)) {
+        const kwID = sc.Modules.keyword.check(cmdData);
+        const kwData = await sc.Modules.keyword.get(cmdData, kwID);
+
+        if (kwData === null) {
+            return;
+        }
+
+        const {response, extra} = kwData;
+
+        if (extra.Reply === false) {
+            return;
+        }
+
+        if (response.embedData) {
+            return await sendEmbed(cmdData, response.embedData);
         } else {
-            return await send(cmdData, reply);
+            return await send(cmdData, response);
         }
     }
 

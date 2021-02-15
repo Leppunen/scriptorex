@@ -150,15 +150,22 @@ const handleMsg = async (msg) => {
         return;
     }
 
-    // Check if channel is ignored
-    if (type === 'privmsg' && channelMeta.Ignore === 1) {
+    // Check if input is a keyword
+    if (sc.Modules.keyword.check(cmdData)) {
+        const kwID = sc.Modules.keyword.check(cmdData);
+        const kwData = await sc.Modules.keyword.get(cmdData, kwID);
+
+        if (kwData === null) {
         return;
     }
 
-    // Check if input is a keyword
-    if (sc.Modules.keyword.check(cmdData)) {
-        const reply = await sc.Modules.keyword.get(cmdData);
-        return await send(cmdData, reply);
+        const {response, extra} = kwData;
+
+        if (extra.Reply === false) {
+            return;
+        }
+
+        return await send(cmdData, response);
     }
 
     // Input is a command. Process it as such
