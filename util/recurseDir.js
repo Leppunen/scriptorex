@@ -9,7 +9,7 @@ module.exports.find = (dir, filter, fileList = []) => {
         const fileStat = fs.lstatSync(filePath);
 
         if (fileStat.isDirectory()) {
-            this.find(filePath, filter, fileList);
+            sc.Utils.recurseDir(filePath, filter, fileList);
         } else if (filter.test(filePath)) {
             fileList.push(filePath);
         }
