@@ -86,6 +86,15 @@ client.on('NOTICE', async ({channelName, messageID, messageText}) => {
         break;
     }
 
+    case 'msg_banned': {
+        sc.Logger.info(`${chalk.red('[BANNED]')} || Bot is banned in ${channelName}. Parting`);
+        await sc.Utils.db.query('UPDATE Channel SET Connect = 0 WHERE Name = ?', [channelName]);
+        if (sc.Twitch.joinedChannels.has(channelName)) {
+            await sc.Twitch.part(channelName);
+        }
+        await sc.Channel.reload();
+        break;
+    }
     default: {
         const channelMeta = sc.Channel.get(channelName);
         await sc.Utils.misc.log('Notice', 'Twitch', channelMeta.ID, null, messageID, messageText, null);
