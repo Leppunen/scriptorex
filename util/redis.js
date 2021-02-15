@@ -35,6 +35,10 @@ module.exports.get = async (key) => {
     return JSON.parse(data);
 };
 
+module.exports.del = async (key) => {
+    await redis.del(key);
+};
+
 module.exports.getBase64 = async (name) => {
     const data = await redis.get(name);
     if (!data) {
