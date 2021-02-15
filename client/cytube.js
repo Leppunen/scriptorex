@@ -36,30 +36,30 @@ const joinChannel = (channel) => {
         sc.Logger.warn(`Client for Cytube channel ${channel} is already created. Disconnecting and creating a new one.`);
     }
     const {Extra: {Password}} = sc.Channel.get(`Cytube-${channel}`);
-        clients[channel] = new Cytube({
-            host: 'cytu.be',
-            port: 443,
-            secure: true,
-            user: sc.Config.cytube.username,
-            auth: sc.Config.cytube.password,
+    clients[channel] = new Cytube({
+        host: 'cytu.be',
+        port: 443,
+        secure: true,
+        user: sc.Config.cytube.username,
+        auth: sc.Config.cytube.password,
         pass: Password ?? null,
-            chan: channel,
-        });
+        chan: channel,
+    });
 
-        const client = clients[channel];
+    const client = clients[channel];
 
     client.connecting = true;
     client.restartInterval = null;
 
-        client.userMap = new Map();
+    client.userMap = new Map();
 
-        client.on('clientready', () => {
+    client.on('clientready', () => {
         client.connecting = false;
         clearInterval(client.restartInterval);
         sc.Logger.info(`${chalk.green('[CYTUBE]')} || Connected to Cytube channel ${chalk.magenta(channel)}.`);
-        });
+    });
 
-        client.on('error', (e) => {
+    client.on('error', (e) => {
         sc.Logger.error(`Error occurred in Cytube client for channel ${channel} -> ${e}`);
         if (client.connecting) {
             return;
@@ -77,32 +77,32 @@ const joinChannel = (channel) => {
         sc.Logger.warn(`Reconnecting to ${channel}`);
         client.destroy();
         client.restartInterval = setTimeout(() => joinChannel(channel), reconnectDelay);
-        });
+    });
 
-        client.on('userlist', (data = []) => {
-            for (const record of data) {
-                if (typeof record.name === 'string') {
-                    record.name = record.name.toLowerCase();
-                    client.userMap.set(record.name, record);
-                }
+    client.on('userlist', (data = []) => {
+        for (const record of data) {
+            if (typeof record.name === 'string') {
+                record.name = record.name.toLowerCase();
+                client.userMap.set(record.name, record);
             }
-        });
+        }
+    });
 
-        client.on('addUser', (data) => {
-            if (typeof data.name === 'string') {
-                data.name = data.name.toLowerCase();
-                client.userMap.set(data.name, data);
-            }
-        });
-
-        client.on('userLeave', (data) => {
+    client.on('addUser', (data) => {
+        if (typeof data.name === 'string') {
             data.name = data.name.toLowerCase();
-            client.userMap.delete(data.name);
-        });
+            client.userMap.set(data.name, data);
+        }
+    });
 
-        client.on('chatMsg', async (data) => {
-            await handleMessage({client: client, channel: channel, data: data});
-        });
+    client.on('userLeave', (data) => {
+        data.name = data.name.toLowerCase();
+        client.userMap.delete(data.name);
+    });
+
+    client.on('chatMsg', async (data) => {
+        await handleMessage({client: client, channel: channel, data: data});
+    });
 };
 
 const handleMessage = async ({client, channel, data}) => {
@@ -177,42 +177,42 @@ const handleMessage = async ({client, channel, data}) => {
     }
 
     if (data.msg.startsWith(sc.Config.parms.prefix)) {
-    const cmdMeta = sc.Command.get(commandstring);
+        const cmdMeta = sc.Command.get(commandstring);
 
-    // No command found. Do nothing.
-    if (!cmdMeta) {
-        return;
-    }
-
-    if (await sc.Modules.cooldown(context, {'Mode': 'check'})) {
-        return;
-    }
-
-    try {
-        const cmdRun = await sc.Command.execute(commandstring, context, context.user.meta);
-        if (cmdRun.state === false) {
-            return send(context, `Command Error: ${cmdRun.data}`);
-        }
-        sc.Temp.cmdCount++;
-
-        if (!cmdRun.data) {
-            return send(context, 'Command returned no data.');
+        // No command found. Do nothing.
+        if (!cmdMeta) {
+            return;
         }
 
-        return send(context, cmdRun.data);
-    } catch (e) {
-        await sc.Utils.misc.logError(e.name, e.message, e.stack);
-        if (e instanceof SyntaxError) {
-            sc.Logger.warn(`${chalk.red('[SyntaxError]')} || ${e.name} -> ${e.message} ||| ${e.stack}`);
-            return send(context, 'This command has a Syntax Error.');
+        if (await sc.Modules.cooldown(context, {'Mode': 'check'})) {
+            return;
         }
-        if (e instanceof TypeError) {
-            sc.Logger.warn(`${chalk.red('[TypeError]')} || ${e.name} -> ${e.message} ||| ${e.stack}`);
-            return send(context, 'This command has a Type Error.');
+
+        try {
+            const cmdRun = await sc.Command.execute(commandstring, context, context.user.meta);
+            if (cmdRun.state === false) {
+                return send(context, `Command Error: ${cmdRun.data}`);
+            }
+            sc.Temp.cmdCount++;
+
+            if (!cmdRun.data) {
+                return send(context, 'Command returned no data.');
+            }
+
+            return send(context, cmdRun.data);
+        } catch (e) {
+            await sc.Utils.misc.logError(e.name, e.message, e.stack);
+            if (e instanceof SyntaxError) {
+                sc.Logger.warn(`${chalk.red('[SyntaxError]')} || ${e.name} -> ${e.message} ||| ${e.stack}`);
+                return send(context, 'This command has a Syntax Error.');
+            }
+            if (e instanceof TypeError) {
+                sc.Logger.warn(`${chalk.red('[TypeError]')} || ${e.name} -> ${e.message} ||| ${e.stack}`);
+                return send(context, 'This command has a Type Error.');
+            }
+            send(context, 'Error occurred while executing the command.');
+            return sc.Logger.error(`Error executing command: (${e.name}) -> ${e.message} ||| ${e.stack}`);
         }
-        send(context, 'Error occurred while executing the command.');
-        return sc.Logger.error(`Error executing command: (${e.name}) -> ${e.message} ||| ${e.stack}`);
-    }
     }
 };
 
