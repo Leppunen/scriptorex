@@ -34,7 +34,8 @@ client.on('messageCreate', async (msg) => {
     let channelMeta = sc.Channel.get(msg.channel.id);
 
     if (!channelMeta.ID) {
-        await sc.Utils.db.query('INSERT INTO Channel (Name, Description, Platform, Platform_ID) VALUES (?, ?, ?, ?)', [msg.channel.id, `Channel ${msg.channel.name} in Server ${msg.channel.guild.name}`, 'Discord', msg.channel.guild.id]);
+        await sc.Utils.db.query('INSERT INTO Channel (Name, Description, Platform, Platform_ID, Extra) VALUES (?, ?, ?, ?, ?)', [msg.channel.id, `Channel ${msg.channel.name} in Server ${msg.channel.guild.name}`, 'Discord', msg.channel.id, `{"guildID":${msg.channel.guild.id}}`]);
+        await sc.Channel.reload();
         channelMeta = sc.Channel.get(msg.channel.id);
     }
 
