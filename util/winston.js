@@ -16,7 +16,7 @@ const logFormat = printf(({level, message, timestamp}) => {
     return `${chalk.magenta(timestamp)} [${level}]: ${message}`;
 });
 
-module.exports.logger = createLogger({
+const winston = createLogger({
     format: combine(
         format((info) => {
             info.level = info.level.toUpperCase();
@@ -36,29 +36,29 @@ module.exports.logger = createLogger({
 addColors(loggerlevels.colors);
 
 if (process.env.loglevel) {
-    this.logger.transports[0].level = process.env.loglevel;
-    this.logger.info(`Setting loglevel to ${this.logger.transports[0].level}`);
+    winston.transports[0].level = process.env.loglevel;
+    winston.info(`Setting loglevel to ${winston.transports[0].level}`);
 } else {
-    this.logger.transports[0].level = 'info';
-    this.logger.info(`Setting loglevel to ${this.logger.transports[0].level}`);
+    winston.transports[0].level = 'info';
+    winston.info(`Setting loglevel to ${winston.transports[0].level}`);
 }
 
 module.exports.info = (...args) => {
-    this.logger.info(...args);
+    winston.info(...args);
 };
 
 module.exports.error = (...args) => {
-    this.logger.error(...args);
+    winston.error(...args);
 };
 
 module.exports.debug = (...args) => {
-    this.logger.debug(...args);
+    winston.debug(...args);
 };
 
 module.exports.warn = (...args) => {
-    this.logger.warn(...args);
+    winston.warn(...args);
 };
 
 module.exports.json = (...args) => {
-    this.logger.debug(util.inspect(...args));
+    winston.debug(util.inspect(...args));
 };
