@@ -70,3 +70,18 @@ setInterval(async () => {
         sc.Logger.warn(`Error while refreshing bot active status: ${e}`);
     }
 }, 600000);
+
+// Update Emote data
+setInterval(async () => {
+    try {
+        sc.Temp.emoteData = [];
+        for (const setID of sc.Temp.emoteSets) {
+            if (setID === '0' || (setID.length === 9 && setID.startsWith('4') || setID.startsWith('5'))) continue;
+            const {status, channellogin, channelid, tier, emotes} = await sc.Utils.got.bot(`twitch/emoteset/${setID}`, {throwHttpErrors: false}).json();
+            if (status === 404) continue;
+            sc.Temp.emoteData.push({setID, channellogin, channelid, tier, emotes});
+        }
+    } catch (e) {
+        sc.Logger.warn(`Error while checking for emoteset data for: ${e}`);
+    }
+}, 600000);
