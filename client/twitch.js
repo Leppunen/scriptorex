@@ -17,7 +17,7 @@ client.initialize = async () => {
 };
 
 client.on('ready', async () => {
-    sc.Logger.info(`${chalk.green('[CONNECTED]')} || Connected to Twitch.`);
+    sc.Logger.info(`${chalk.green('[TWITCH]')} || Connected to Twitch.`);
     const rebootChannel = await sc.Utils.cache.get('lastRebootChannel');
     if (rebootChannel) {
         await client.say(rebootChannel, 'Running!');
@@ -107,6 +107,10 @@ client.on('NOTICE', async ({channelName, messageID, messageText}) => {
     }
 });
 
+client.on('USERSTATE', (meta) => {
+    sc.Temp.emoteSets = meta.emoteSets;
+});
+
 client.on('PRIVMSG', (msg) => handleMsg(msg));
 
 client.on('WHISPER', (msg) => handleMsg(msg));
@@ -115,7 +119,7 @@ const handleMsg = async (msg) => {
     const type = (msg instanceof Twitch.WhisperMessage) ? 'whisper' : 'privmsg';
     const channelMeta = sc.Channel.get(msg.channelName);
 
-    const message = msg.messageText.replace(sc.Config.parms.msgregex, '');
+    const message = msg.messageText.replace(sc.Config.parms.msgregex, '').trimRight();
     const content = message.split(/\s+/g);
     const command = content[0];
     const commandstring = command.slice(sc.Config.parms.prefix.length);
@@ -130,7 +134,9 @@ const handleMsg = async (msg) => {
             'badges': msg.badgesRaw,
         },
         'message': {
+            'id': msg.messageID,
             'raw': msg.rawSource,
+            'content': content,
             'text': message,
             'args': args,
         },
@@ -143,6 +149,8 @@ const handleMsg = async (msg) => {
         'channelMeta': channelMeta,
         'userstate': msg.ircTags,
     };
+
+    cmdData.user.meta = await sc.Modules.user.get({Platform: cmdData.platform, id: cmdData.user.id});
 
     // Update bot status
     if (msg.senderUsername === sc.Config.twitch.username && channelMeta) {
@@ -168,6 +176,12 @@ const handleMsg = async (msg) => {
 
     // If the bot is timed out, do not process anything
     if (await sc.Utils.cache.get(`channelTimeouts-${msg.channelName}`)) {
+        sc.Logger.warn(`Timed out in channel ${msg.channelName} Not executing command.`);
+        return;
+    }
+
+
+    if (channelMeta.Ignore === 1 && cmdData.user.meta?.Extra?.BypassIgnores !== true) {
         return;
     }
 
@@ -182,8 +196,8 @@ const handleMsg = async (msg) => {
         const kwData = await sc.Modules.keyword.get(cmdData, kwID);
 
         if (kwData === null) {
-        return;
-    }
+            return;
+        }
 
         const {response, extra} = kwData;
 
@@ -212,7 +226,7 @@ const handleMsg = async (msg) => {
 
         if (type === 'whisper' && !cmdMeta.Whisperable) {
             await sc.Modules.cooldown(cmdData, {'Level': 'Whisper'});
-            return await pm(cmdData, cmd.help, 'This command is not whisperable');
+            return await pm(cmdData, 'This command is not whisperable');
         }
 
         try {
@@ -221,6 +235,9 @@ const handleMsg = async (msg) => {
             const cmdRun = await sc.Command.execute(commandstring, cmdData, userMeta);
 
             if (cmdRun.state === false) {
+                if (cmdRun.data === 'silent') {
+                    return;
+                }
                 return await send(cmdData, `Command ${cmdRun.cmd} failed: ${cmdRun.data}`);
             }
 
@@ -230,11 +247,8 @@ const handleMsg = async (msg) => {
                 return;
             }
 
-            if (!cmdRun.data) {
-                if (type === 'whisper') {
-                    return await pm(cmdData, 'Command returned no data.');
-                }
-                return await send(cmdData, 'Command returned no data. must be something Pepega');
+            if (!cmdRun.rawReply) {
+                return sc.Logger.warn(`Command ${cmdRun.cmd} Returned no data while executing.`);
             }
 
             if (type === 'whisper') {
@@ -251,7 +265,11 @@ const handleMsg = async (msg) => {
                 sc.Logger.warn(`${chalk.red('[TypeError]')} || ${e.name} -> ${e.message} ||| ${e.stack}`);
                 return await send(cmdData, 'This command has a Type Error.');
             }
-            await send(cmdData, 'Error occurred while executing the command. FeelsBadMan');
+            if (type === 'whisper') {
+                await pm(cmdData, 'Error occurred while executing the command');
+            } else {
+                await send(cmdData, 'Error occurred while executing the command. FeelsBadMan');
+            }
             return sc.Logger.error(`Error executing command: (${e.name}) -> ${e.message} ||| ${e.stack}`);
         }
     }
@@ -279,7 +297,7 @@ const send = async (meta, msg) => {
             return await send(meta, 'That message was a duplicate monkaS');
         }
         await client.say(meta.channel, 'Error while processing the reply message monkaS');
-        sc.Logger.error(`Error while processing reply message: ${e}`);
+        sc.Logger.error(`Error while processing reply message in channel ${meta.channel}: ${e}`);
         await sc.Utils.misc.logError('SendError', e.message, e.stack);
     }
 };
