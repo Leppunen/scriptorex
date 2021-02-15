@@ -72,16 +72,19 @@ client.on('NOTICE', async ({channelName, messageID, messageText}) => {
     switch (messageID) {
     case 'msg_rejected':
     case 'msg_rejected_mandatory': {
-        sc.Logger.debug(`Received msg_rejected/mandatory from ${channelName}! -> ${messageText}`);
+        sc.Logger.warn(`Received msg_rejected/mandatory from ${channelName}! -> ${messageText}`);
         break;
     }
 
     case 'no_permission': {
-        sc.Logger.debug(`Received no_permission from ${channelName}! -> ${messageText}`);
+        sc.Logger.warn(`Received no_permission from ${channelName}! -> ${messageText}`);
+        await sc.Twitch.say(channelName, 'I have no permission to perform that action!');
         break;
     }
 
     case 'host_on':
+    case 'bad_delete_message_mod':
+    case 'msg_channel_suspended':
     case 'host_target_went_offline': {
         break;
     }
@@ -95,6 +98,7 @@ client.on('NOTICE', async ({channelName, messageID, messageText}) => {
         await sc.Channel.reload();
         break;
     }
+
     default: {
         const channelMeta = sc.Channel.get(channelName);
         await sc.Utils.misc.log('Notice', 'Twitch', channelMeta.ID, null, messageID, messageText, null);
