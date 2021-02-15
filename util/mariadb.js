@@ -5,7 +5,7 @@ const options = {
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
     waitForConnections: true,
-    connectionLimit: 25,
+    connectionLimit: 10,
     queueLimit: 0,
     rowsAsArray: false,
 };
