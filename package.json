@@ -9,24 +9,24 @@
     "author": "Leppunen",
     "license": "N/A",
     "dependencies": {
-        "@yarnpkg/pnpify": "^2.0.0-rc.25",
         "chalk": "^4.1.0",
         "cytube-connector": "https://github.com/Supinic/cytube-connector",
-        "dank-twitch-irc": "^3.2.6",
-        "eris": "^0.13.2",
-        "got": "^11.3.0",
-        "humanize-duration": "^3.23.1",
-        "ioredis": "^4.17.3",
-        "mariadb": "^2.4.0",
-        "modern-rcon": "^1.0.3",
+        "dank-twitch-irc": "^4.3.0",
+        "eris": "^0.14.0",
+        "got": "^11.8.1",
+        "humanize-duration": "^3.25.1",
+        "ioredis": "^4.22.0",
+        "mariadb": "^2.5.2",
+        "rcon-client": "^4.2.3",
         "reconnecting-websocket": "^4.4.0",
         "shelljs": "^0.8.4",
-        "winston": "^3.2.1",
-        "ws": "^7.3.0"
+        "winston": "^3.3.3",
+        "ws": "^7.4.3"
     },
     "devDependencies": {
+        "@yarnpkg/pnpify": "^2.4.0",
         "babel-eslint": "^10.1.0",
-        "eslint": "^7.2.0",
+        "eslint": "^7.20.0",
         "eslint-config-google": "^0.14.0"
     }
 }
