@@ -32,6 +32,13 @@ client.on('error', async (error) => {
         client.configuration.password = `oauth:${await sc.Utils.cache.get('oauth-token')}`;
     }
     if (error instanceof Twitch.JoinError) {
+        const userData = await sc.Utils.twitch.resolveid(sc.Channel.get(error.failedChannelName).Platform_ID);
+        if (userData.login !== error.failedChannelName) {
+            sc.Logger.warn(`${chalk.yellow('[JOIN]')} || User ${error.failedChannelName} has namechanged to ${userData.login}. Updating record and rejoining`);
+            await sc.Utils.db.query('UPDATE Channel SET Name = ? WHERE Platform_ID = ?', [userData.login, userData.id]);
+            await sc.Twitch.join(userData.login);
+            return await sc.Channel.reload();
+        }
         return sc.Logger.warn(`${chalk.red('[JOIN]')} || Error joining channel ${error.failedChannelName}: ${error}`);
     }
     if (error instanceof Twitch.SayError) {
