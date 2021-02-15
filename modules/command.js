@@ -1,26 +1,30 @@
 module.exports.initialize = () => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         sc.Temp.cmdFiles.clear();
         sc.Temp.cmdAliases.clear();
-        sc.Utils.recurseDir(`${require.main.path}/commands`, /\.js$/).forEach((f) => {
+
+        const commandFiles = sc.Utils.recurseDir(`${require.main.path}/commands`, /\.js$/);
+
+        for (const cmdFile of commandFiles) {
             try {
-                delete require.cache[`${f}`];
-                const cmd = require(`${f}`);
+                delete require.cache[`${cmdFile}`];
+                const cmd = require(`${cmdFile}`);
                 if (cmd.help.archived) return;
                 sc.Temp.cmdFiles.set(cmd.help.name, cmd);
                 if (cmd.help.aliases) {
-                    cmd.help.aliases.forEach((alias) => {
+                    for (const alias of cmd.help.aliases) {
                         sc.Temp.cmdAliases.set(alias, cmd.help.name);
-                    });
+                    }
                 }
             } catch (e) {
                 e.filename = f;
                 sc.Logger.error(`Failed to load command file ${f}, Error: ${e}`);
-                return reject(e);
+                throw new Error(e);
             }
-        });
+        }
+
         sc.Logger.info(`Loaded ${sc.Temp.cmdFiles.size} commands!`);
-        return resolve(true);
+        resolve();
     });
 };
 
