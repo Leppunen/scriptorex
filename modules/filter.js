@@ -1,9 +1,13 @@
 module.exports.check = (meta) => {
-    return this.checkBlacklists(meta) || this.checkWhitelists(meta) || false;
+    return checkBlacklists(meta) || checkWhitelists(meta) || false;
 };
 
-module.exports.checkWhitelists = (meta) => {
+const checkWhitelists = (meta) => {
     const commandData = sc.Command.get(meta.command.Name);
+
+    if (meta?.userMeta?.Extra?.Admin) {
+        return false;
+    }
 
     if (!commandData.Whitelisted) {
         return false;
@@ -28,7 +32,7 @@ module.exports.checkWhitelists = (meta) => {
     }
 };
 
-module.exports.checkBlacklists = (meta) => {
+const checkBlacklists = (meta) => {
     const blacklists = sc.Data.filters.filter((i) => i.Active && i.Mode === 'Blacklist');
     const blacklist = blacklists.find((i) => {
         if (i.User === meta.userid) {
@@ -57,6 +61,10 @@ module.exports.checkBlacklists = (meta) => {
         return false;
     });
     if (!blacklist) return false;
+
+    if (blacklist.Silent) {
+        return 'silent';
+    }
 
     if (blacklist.Response) {
         return blacklist.Response;
