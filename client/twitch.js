@@ -45,6 +45,9 @@ client.on('error', async (error) => {
         return sc.Logger.warn(`${chalk.red('[JOIN]')} || Error joining channel ${error.failedChannelName}: ${error}`);
     }
     if (error instanceof Twitch.SayError) {
+        if (error.cause === 'TimeoutError') {
+            return sc.Logger.warn(`Timeout while sending a message in ${error.failedChannelName}`);
+        }
         return sc.Logger.warn(`${chalk.red('[SAY]')} || Error sending message in ${error.failedChannelName}: ${error.cause} | ${error}`);
     }
     sc.Logger.error(`${chalk.red('[ERROR]')} || Error occurred in DTI: ${error}`);
