@@ -14,7 +14,7 @@ module.exports.connect = () => {
 };
 
 ps.addEventListener('open', () => {
-    sc.Logger.info(`${chalk.green('[CONNECTED]')} || Connected to Twitch PubSub. Subscribing to topics.`);
+    sc.Logger.info(`${chalk.green('[PUBSUB]')} || Connected to Twitch PubSub. Subscribing to topics.`);
     for (const channel of sc.Channel.getJoinable('Twitch')) {
         listenStreamStatus(channel);
         listenChannelPoints(channel);
@@ -37,13 +37,13 @@ ps.addEventListener('message', ({data}) => {
             const msgTopic = msg.data.topic;
             switch (msgData.type) {
             case 'viewcount':
-                handleWSMsg({channel: msgTopic.replace('video-playback.', ''), type: msgData.type, viewcount: msgData.viewers});
+                handleWSMsg({channel: msgTopic.replace('video-playback-by-id.', ''), type: msgData.type, viewcount: msgData.viewers});
                 break;
             case 'commercial':
                 break;
             case 'stream-up':
             case 'stream-down':
-                handleWSMsg({channel: msgTopic.replace('video-playback.', ''), type: msgData.type});
+                handleWSMsg({channel: msgTopic.replace('video-playback-by-id.', ''), type: msgData.type});
                 break;
             case 'reward-redeemed':
                 handleWSMsg({channel: msgData.data.redemption.channel_id, type: msgData.type, data: msgData.data.redemption});
@@ -74,7 +74,7 @@ const listenStreamStatus = async (channel) => {
         'type': 'LISTEN',
         'nonce': nonce,
         'data': {
-            'topics': [`video-playback.${channelMeta.Name}`],
+            'topics': [`video-playback-by-id.${channelMeta.Platform_ID}`],
             'auth_token': await sc.Utils.cache.get('oauth-token'),
         },
     };
@@ -101,33 +101,29 @@ const listenChannelPoints = async (channel) => {
 const handleWSMsg = async (msg = {}) => {
     const channelMeta = sc.Channel.get(msg.channel);
     if (!channelMeta.Name) return null;
-    if (msg) {
-        switch (msg.type) {
-        case 'viewcount':
+
+    if (!msg.type) {
+        return sc.Logger.warn(`Unknown message without type: ${JSON.stringify(msg)}`);
+    }
+
+
+    switch (msg.type) {
+    case 'viewcount':
+        await sc.Utils.cache.set(`streamLive-${channelMeta.Name}`, 'true', 35);
+        break;
+    case 'stream-up': {
+        const streamLive = await sc.Utils.cache.get(`streamLive-${channelMeta.Name}`);
+        if (!streamLive) {
             await sc.Utils.cache.set(`streamLive-${channelMeta.Name}`, 'true', 35);
-            break;
-        case 'stream-up':
-            await sc.Utils.cache.set(`streamLive-${channelMeta.Name}`, 'true', 35);
-            if (!channelMeta.streamLive) {
-                sc.Logger.debug(`Channel ${channelMeta.Name} went live`);
-                channelMeta.streamLive = true;
-                if (channelMeta.Name === 'supinic' || channelMeta.Name === 'pajlada') {
-                    await sc.Twitch.say(channelMeta.Name, 'HONEYDETECTED 👉 Channel is live!');
-                }
-            }
-            break;
-        case 'stream-down':
-            await sc.Utils.cache.redis.del(`streamLive-${channelMeta.Name}`);
-            sc.Logger.debug(`Channel ${channelMeta.Name} went offline`);
-            channelMeta.streamLive = false;
-            if (channelMeta.Name === 'supinic' || channelMeta.Name === 'pajlada') {
-                await sc.Twitch.say(channelMeta.Name, 'peepoSadDank 👉 Channel is offline!');
-            }
-            break;
-        case 'reward-redeemed':
-            await sc.Twitch.say(channelMeta.Name, `HONEYDETECTED 👉 CHANNELPOINTREDEMPTIONDETECTED By ${msg.data.user.display_name} -> [${msg.data.reward.title}]`);
-            break;
         }
+    }
+        break;
+    case 'stream-down':
+        await sc.Utils.cache.redis.del(`streamLive-${channelMeta.Name}`);
+        break;
+    case 'reward-redeemed':
+        // await sc.Twitch.say(channelMeta.Name, `HONEYDETECTED 👉 CHANNELPOINTREDEMPTIONDETECTED By ${msg.data.user.display_name} -> [${msg.data.reward.title}]`);
+        break;
     }
 };
 
@@ -142,7 +138,7 @@ const handleWSResp = (msg) => {
     if (msg.error) {
         sc.Logger.warn(`Error occurred while subscribing to topic ${topic} for channel ${Name}: ${msg.error}`);
     } else {
-        sc.Logger.info(`Successfully subscribed to topic ${chalk.cyan(topic)} for channel ${chalk.magenta(Name)}`);
+        sc.Logger.info(`${chalk.green('[PUBSUB]')} Successfully subscribed to topic ${chalk.cyan(topic)} for channel ${chalk.magenta(Name)}`);
     }
 };
 

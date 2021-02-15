@@ -5,10 +5,6 @@ module.exports.get = (channel) => {
         return {};
     }
 
-    if (!Array.isArray(channelData.pubsubTopics)) {
-        channelData.pubsubTopics = [];
-    }
-
     if (channelData.Extra && typeof channelData.Extra !== 'object') {
         try {
             channelData.Extra = JSON.parse(channelData.Extra);
