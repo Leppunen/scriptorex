@@ -1,5 +1,4 @@
 const chalk = require('chalk');
-const utils = require('util');
 
 const {Rcon} = require('rcon-client');
 
@@ -45,15 +44,20 @@ start();
 
 // Exception Handlers
 process
-    .on('unhandledRejection', async (reason, promise) => {
-        await sc.Utils.misc.logError('PromiseRejection', utils.inspect(promise), utils.inspect(reason));
-        return sc.Logger.error(`${chalk.red('[UnhandledRejection]')} || ${utils.inspect(promise)} -> ${reason}`);
+    .on('unhandledRejection', (err) => {
+        if (err.name === 'SayError') {
+            return;
+        }
+        if (err.name === 'EvalError') {
+            return;
+        }
+        return sc.Logger.error(`${chalk.red('[UnhandledRejection]')} || [${err.name}] ${err} - ${err.stack}`);
     })
     .on('uncaughtException', async (err) => {
         await sc.Utils.misc.logError('UncaughtException', err.message, err.stack);
         await sc.Utils.misc.push('Uncaught Exception detected!', `${err.stack}`);
         sc.Logger.error(`${chalk.red('[UncaughtException]')} || ${err.message}`);
-        return process.exit(0);
+        process.abort();
     });
 
 // Misc
