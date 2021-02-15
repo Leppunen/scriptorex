@@ -15,6 +15,21 @@ const shortHumanize = humanize.humanizer({
     },
 });
 
+const htmlEntities = {
+    'nbsp': ' ',
+    'lt': '<',
+    'gt': '>',
+    'amp': '&',
+    'quot': '"',
+    'apos': '\'',
+    'cent': '¢',
+    'pound': '£',
+    'yen': '¥',
+    'euro': '€',
+    'copy': '©',
+    'reg': '®',
+};
+
 module.exports.uptime = () => {
     const ms = process.uptime() * 1000;
     return shortHumanize(ms, {
@@ -91,6 +106,13 @@ module.exports.getVideoInfo = async (url) => {
 
 module.exports.randomArray = (array) => {
     return array[Math.floor(Math.random() * array.length)];
+};
+
+module.exports.fixHTML = (string) => {
+    return string.replace(/&#?(?<identifier>[a-z0-9]+);/g, (...params) => {
+        const {identifier} = params.pop();
+        return htmlEntities[identifier] || String.fromCharCode(Number(identifier));
+    });
 };
 
 module.exports.log = async (type, platform, channel, username, data, extra, response) => {
